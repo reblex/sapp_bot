@@ -2,6 +2,7 @@
 
 from src.chain import Chain
 from random import randint
+import src.base as base
 
 def main():
     """Main function"""
@@ -19,7 +20,6 @@ def main():
 
     # Print the resulting sentance.
     print(sentance)
-
 
 if __name__ == "__main__":
     main()
