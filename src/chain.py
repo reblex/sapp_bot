@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-
+import os
 
 class Chain(object):
     """Markov Chain Generator"""
@@ -62,9 +62,12 @@ class Chain(object):
             else:
                 model[word_1] = {word_2: 1}
 
-        with open("models/markov_dict.txt", "w") as file:
-            for key, value in model.items():
-                file.write('%s:%s\n' % (key, value))
+        if save:
+            if not os.path.exists("models"):
+                os.makedirs("models")
+            with open("models/markov_dict.txt", "w") as file:
+                for key, value in model.items():
+                    file.write('%s:%s\n' % (key, value))
 
         return model
 
