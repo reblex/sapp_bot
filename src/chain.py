@@ -15,7 +15,16 @@ class Chain(object):
     def build_model(self, save=True):
         """Build a new Model from Corpus"""
         # Load corpus
-        txt = open(self.corpus_path, encoding='utf8').read()
+        txt = ""
+        if os.path.isdir(self.corpus_path):
+            for (dirpath, _, filenames) in os.walk(self.corpus_path):
+                for filename in filenames:
+                    with open(os.path.join(dirpath, filename)) as f:
+                        txt += f.read()
+        else:
+            txt = open(self.corpus_path, encoding='utf8').read()
+
+
         self.corpus = txt.split()
 
         # Yield a generator object from corpus

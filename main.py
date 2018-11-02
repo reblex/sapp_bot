@@ -6,7 +6,7 @@ from random import randint
 def main():
     """Main function"""
     chain = Chain("corpus/test.txt")
-    chain.build_model("corpus/test.txt")
+    chain.build_model()
     chain.generate(20)
 
     # Join the words into a string.
