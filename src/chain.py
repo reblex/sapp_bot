@@ -31,7 +31,7 @@ class Chain():
 
         for word in txt.split():
             word = word.lower()
-            word = word.strip(',.?"')
+            word = word.strip(',.?!()"“”:')
 
             self.corpus.append(word)
 
