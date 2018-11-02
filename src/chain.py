@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
+""" Markov chain """
 
-import numpy as np
 import os
+import numpy as np
 
-class Chain(object):
+
+class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, model=None):
         self.corpus_path = corpus_path
+        self.corpus_pairs = None
         self.corpus = None    # Splitted words
         self.model = None
         self.values = None
 
-
-    def build_model(self, save=True):
+    def build_model(self):
         """Build a new Model from Corpus"""
         # Load corpus
         txt = ""
@@ -24,7 +26,6 @@ class Chain(object):
         else:
             txt = open(self.corpus_path, encoding='utf8').read()
 
-
         self.corpus = txt.split()
 
         # Yield a generator object from corpus
@@ -32,13 +33,11 @@ class Chain(object):
 
         self.model = self.instantiate_model()
 
-
     def load_model(self, file):
         """Load a Model from File"""
         # 1. load model from file
         # 2. instantiate_model()
         pass
-
 
     def generate(self, steps):
         """Generate Markov Chain based on Model"""
@@ -49,13 +48,8 @@ class Chain(object):
             first_word = np.random.choice(self.corpus)
         self.values = [first_word]
 
-        for i in range(steps):
+        for _ in range(steps):
             self.values.append(self.walk(self.model[self.values[-1]]))
-
-
-
-
-
 
     def instantiate_model(self, save=True):
         """Build the model"""
@@ -80,7 +74,6 @@ class Chain(object):
 
         return model
 
-
     def make_pairs(self):
         """Yielding a generator object from corpus"""
         for i in range(len(self.corpus)-1):
@@ -99,7 +92,6 @@ class Chain(object):
 
         # Multiply each value by the normalizer
         probabilities = [x * normalizer for x in chain.values()]
-
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
 

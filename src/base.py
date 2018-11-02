@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-
-from datetime import datetime, timedelta
-
 """
 General helper functions
 """
+
+from datetime import datetime
+
 
 def prompt_print(text):
     """Wrapper function to print with prepended current time"""
