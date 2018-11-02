@@ -1,3 +1,4 @@
 models
 corpus*
 __pycache__
+blacklist.txt
