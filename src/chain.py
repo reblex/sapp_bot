@@ -44,17 +44,16 @@ class Chain():
         # Pick a random capitalized first word.
         first_word = np.random.choice(self.corpus)
 
-        while first_word.islower(): # TODO: better handling of first capital? Maybe.
-            first_word = np.random.choice(self.corpus)
         self.values = [first_word]
 
         for _ in range(steps):
             self.values.append(self.walk(self.model[self.values[-1]]))
 
+        self.values[0] = self.values[0].title()
+
     def instantiate_model(self, save=True):
         """Build the model"""
         # Fill dictionary with word pairs, appending to already existing keys.
-        # TODO: Move more occuring words to the left
         model = {}
         for word_1, word_2 in self.corpus_pairs:
             if word_1 in model.keys():
