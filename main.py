@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 """ Main interface """
 
+from src.chain import Chain
+from src.wiki_scraper import WikiScraper
 from random import randint
 from src.chain import Chain
 
 
 def main():
     """Main function"""
-    chain = Chain("corpus/test.txt")
+    # Scrape Minervawikin
+    # ws = WikiScraper()
+    # ws.set_page_list()
+    # ws.build_corpus()
+
+    chain = Chain("corpus")
     chain.build_model()
     chain.generate(20)
 
