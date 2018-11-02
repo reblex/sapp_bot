@@ -24,9 +24,16 @@ class Chain():
                     with open(os.path.join(dirpath, filename)) as f:
                         txt += f.read()
         else:
-            txt = open(self.corpus_path, encoding='utf8').read()
+            with open(self.corpus_path, encoding='utf8') as f:
+                txt = f.read()
 
-        self.corpus = txt.split()
+        self.corpus = list()
+
+        for word in txt.split():
+            word = word.lower()
+            word = word.strip(',.?"')
+
+            self.corpus.append(word)
 
         # Yield a generator object from corpus
         self.corpus_pairs = self.make_pairs()
