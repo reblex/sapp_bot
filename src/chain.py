@@ -14,6 +14,7 @@ class Chain():
         self.blacklist = "blacklist.txt"
         self.corpus_pairs = None
         self.corpus_tripples = None
+        self.corpus_quads = None
         self.corpus = None    # Splitted words
         self.model = None
         self.values = None
@@ -49,6 +50,7 @@ class Chain():
         # Yield a generator object from corpus
         self.corpus_pairs = self.make_pairs()
         self.corpus_tripples = self.make_tripples()
+        self.corpus_quads = self.make_quads()
 
         self.model = self.instantiate_model()
 
@@ -99,8 +101,17 @@ class Chain():
             else:
                 model[pair] = {word_3: 1}
 
-        # TODO: Could add quads here, but with a lower chance of being selected later
-        # to make sure there is not too much raw copying.
+        # Fill dictionary with word quads, using three words as key.
+        for word_1, word_2, word_3, word_4 in self.corpus_quads:
+            pair = word_1 + " " + word_2 + " " + word_3
+
+            if pair in model.keys():
+                if word_4 in model[pair].keys():
+                    model[pair][word_4] += 1
+                else:
+                    model[pair][word_4] = 1
+            else:
+                model[pair] = {word_4: 1}
 
         if save:
             if not os.path.exists("models"):
@@ -121,6 +132,11 @@ class Chain():
         for i in range(len(self.corpus)-2):
             yield (self.corpus[i], self.corpus[i+1], self.corpus[i+2])
 
+    def make_quads(self):
+        """Yielding a generator object from corpus, with four paired words"""
+        for i in range(len(self.corpus)-3):
+            yield (self.corpus[i], self.corpus[i+1], self.corpus[i+2], self.corpus[i+3])
+
     def walk(self):
         """
         Pick the next step at random
@@ -131,7 +147,24 @@ class Chain():
         last_word = self.values[-1]
         key_to_check = last_word
 
-        if len(self.values) >= 2:
+        if len(self.values) >= 3:
+            second_last_word = self.values[-2]
+            third_last_word = self.values[-3]
+            tripple_word = third_last_word + " " + second_last_word + " " + last_word
+            if tripple_word in self.model:
+                # print(self.model[tripple_word])
+                # Default rand_max: 10 gives 30% chance of picking double word value
+                # If double word has more than one value, increase chance to pick a double word value.
+                rand_max = 10
+                if len(self.model[tripple_word].keys()) > 3:
+                    rand_max = 25
+                elif len(self.model[tripple_word].keys()) > 1:
+                    rand_max = 15
+
+                if randint(1, rand_max) > 7:
+                    key_to_check = tripple_word
+
+        elif len(self.values) >= 2:
             second_last_word = self.values[-2]
             double_word = second_last_word + " " + last_word
             if double_word in self.model:
