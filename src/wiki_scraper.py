@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
+""" Wiki scraper """
 
-import requests
 import sys
 import json
 import os
 import re
 import time
+import requests
 
 import src.base as base
 
 
-class WikiScraper(object):
+class WikiScraper():
     """Web Scraper for minervawikin.nu"""
     def __init__(self):
         self.base_url = "https://minervawikin.nu"
         self.pages = list()
         self.corpus_folder = "corpus_test"
         self.corpus_path = "corpus_test"
-
 
     def build_corpus(self):
         """Build corpus files"""
@@ -26,7 +26,7 @@ class WikiScraper(object):
             url = self.base_url + "/wiki/" + page_title
             res = self.get_url(url)
 
-            regex = "<p>(.*)<\/p>"
+            regex = r"<p>(.*)<\/p>"
 
             content = re.search(regex, res.text, re.DOTALL)
             if content:
@@ -42,9 +42,9 @@ class WikiScraper(object):
             if not os.path.exists(self.corpus_path):
                 os.makedirs(self.corpus_path)
 
-            # Strip slashes from page_title and set as file_nameselfself.
+            # Strip slashes from page_title and set as file_name.
             # Then build file_path.
-            file_name = re.sub("[\/]", '_', page_title)
+            file_name = re.sub(r"[\/]", '_', page_title)
             file_path = self.corpus_path + "/" + file_name + ".txt"
 
             with open(file_path, "w") as file:
@@ -87,11 +87,10 @@ class WikiScraper(object):
             sys.exit(0)
 
         except BaseException as e:
-                message = "Exception in get_html: " + str(e)
-                base.prompt_print(message)
+            message = "Exception in get_html: " + str(e)
+            base.prompt_print(message)
 
-
-        if res != None:
+        if res is not None:
             # TODO: Send notification on 404. Site down? other codes?
             if res.status_code != 200:
                 res = None

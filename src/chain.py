@@ -2,8 +2,10 @@
 """ Markov chain """
 
 import os
+import re
 import numpy as np
 from random import randint
+
 
 class Chain():
     """Markov Chain Generator"""
@@ -40,7 +42,7 @@ class Chain():
 
         for word in txt.split():
             word = word.lower()
-            word = word.strip(',.?!()"“”:')
+            word = re.sub(r"[\,\.\?\!\(\)\"\“\”\:\[\]]", '', word)
 
             self.corpus.append(word)
 
@@ -119,7 +121,6 @@ class Chain():
         for i in range(len(self.corpus)-2):
             yield (self.corpus[i], self.corpus[i+1], self.corpus[i+2])
 
-
     def walk(self):
         """
         Pick the next step at random
@@ -145,7 +146,6 @@ class Chain():
 
                 if randint(1, rand_max) > 7:
                     key_to_check = double_word
-
 
         chain = self.model[key_to_check]
 
