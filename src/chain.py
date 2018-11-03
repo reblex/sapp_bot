@@ -3,7 +3,7 @@
 
 import os
 import numpy as np
-
+from random import randint
 
 class Chain():
     """Markov Chain Generator"""
@@ -11,6 +11,7 @@ class Chain():
         self.corpus_path = corpus_path
         self.blacklist = "blacklist.txt"
         self.corpus_pairs = None
+        self.corpus_tripples = None
         self.corpus = None    # Splitted words
         self.model = None
         self.values = None
@@ -45,6 +46,7 @@ class Chain():
 
         # Yield a generator object from corpus
         self.corpus_pairs = self.make_pairs()
+        self.corpus_tripples = self.make_tripples()
 
         self.model = self.instantiate_model()
 
@@ -64,14 +66,16 @@ class Chain():
         for _ in range(steps):
             # TODO: If there are too few words possible, maybe pick another
             # random word.
-            self.values.append(self.walk(self.model[self.values[-1]]))
+            # print(self.model[self.values[-1]])
+            self.values.append(self.walk())
 
         self.values[0] = self.values[0].title()
 
     def instantiate_model(self, save=True):
         """Build the model"""
-        # Fill dictionary with word pairs, appending to already existing keys.
         model = {}
+
+        # Fill dictionary with word pairs, appending to already existing keys.
         for word_1, word_2 in self.corpus_pairs:
             if word_1 in model.keys():
                 if word_2 in model[word_1].keys():
@@ -80,6 +84,21 @@ class Chain():
                     model[word_1][word_2] = 1
             else:
                 model[word_1] = {word_2: 1}
+
+        # Fill dictionary with word tripples, using two words as key.
+        for word_1, word_2, word_3 in self.corpus_tripples:
+            pair = word_1 + " " + word_2
+
+            if pair in model.keys():
+                if word_3 in model[pair].keys():
+                    model[pair][word_3] += 1
+                else:
+                    model[pair][word_3] = 1
+            else:
+                model[pair] = {word_3: 1}
+
+        # TODO: Could add quads here, but with a lower chance of being selected later
+        # to make sure there is not too much raw copying.
 
         if save:
             if not os.path.exists("models"):
@@ -91,16 +110,45 @@ class Chain():
         return model
 
     def make_pairs(self):
-        """Yielding a generator object from corpus"""
+        """Yielding a generator object from corpus, with paired words"""
         for i in range(len(self.corpus)-1):
             yield (self.corpus[i], self.corpus[i+1])
 
-    def walk(self, chain):
+    def make_tripples(self):
+        """Yielding a generator object from corpus, with three paired words"""
+        for i in range(len(self.corpus)-2):
+            yield (self.corpus[i], self.corpus[i+1], self.corpus[i+2])
+
+
+    def walk(self):
         """
         Pick the next step at random
         Each key appearance rate is turned into a probability.
         Then a random key is selected at random, based on probability.
         """
+
+        last_word = self.values[-1]
+        key_to_check = last_word
+
+        if len(self.values) >= 2:
+            second_last_word = self.values[-2]
+            double_word = second_last_word + " " + last_word
+            if double_word in self.model:
+                # print(self.model[double_word])
+                # Default rand_max: 10 gives 30% chance of picking double word value
+                # If double word has more than one value, increase chance to pick a double word value.
+                rand_max = 10
+                if len(self.model[double_word].keys()) > 3:
+                    rand_max = 25
+                elif len(self.model[double_word].keys()) > 1:
+                    rand_max = 15
+
+                if randint(1, rand_max) > 7:
+                    key_to_check = double_word
+
+
+        chain = self.model[key_to_check]
+
         keys = list(chain.keys())
 
         # Calculate the normalizer, using: (1 / (sum of values))
@@ -109,6 +157,12 @@ class Chain():
         # Multiply each value by the normalizer
         probabilities = [x * normalizer for x in chain.values()]
 
+        # TODO: Check if there is a greater match in double word keys.
+        # Reduced chance of picking multiple tripples, quads...
+
+        # TODO: Larger chance to pick word that has many values
+
         step = np.random.choice(keys, 1, p=probabilities)[0]
+        # print("word:", step)
 
         return step
