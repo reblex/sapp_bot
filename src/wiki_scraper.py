@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-""" Wiki scraper """
 
+import requests
 import sys
 import json
 import os
 import re
 import time
-import requests
 
 import src.base as base
 
@@ -16,35 +15,41 @@ class WikiScraper():
     def __init__(self):
         self.base_url = "https://minervawikin.nu"
         self.pages = list()
-        self.corpus_folder = "corpus_test"
-        self.corpus_path = "corpus_test"
+        self.corpus_folder = "corpus"
+        self.corpus_path = "corpus"
 
     def build_corpus(self):
         """Build corpus files"""
+        # TODO: Find out why some words have  spaces in them (start of sentence)
+
         i = 0
         for page_title in self.pages:
             url = self.base_url + "/wiki/" + page_title
             res = self.get_url(url)
 
-            regex = r"<p>(.*)<\/p>"
+            regex = "<p>(.*?)<\/p>"
 
-            content = re.search(regex, res.text, re.DOTALL)
+            content = re.findall(regex, res.text, re.DOTALL)
+            content_text = ""
             if content:
-                content = content.group(0)[:-1]
+                for j in range(len(content)):
+                    content_text += content[j]
+
+                content = ''.join(content_text)
             else:
                 content = ""
 
             # Remove HTML tags
-            clean = re.compile('<.*?>')
-            content = re.sub(clean, '', content)
+            # clean = re.compile('<.*?>')
+            content = re.sub('<.*?>', '', content)
             content = re.sub("</p", '', content)
 
             if not os.path.exists(self.corpus_path):
                 os.makedirs(self.corpus_path)
 
-            # Strip slashes from page_title and set as file_name.
+            # Strip slashes from page_title and set as file_nameselfself.
             # Then build file_path.
-            file_name = re.sub(r"[\/]", '_', page_title)
+            file_name = re.sub("[\/]", '_', page_title)
             file_path = self.corpus_path + "/" + file_name + ".txt"
 
             with open(file_path, "w") as file:
@@ -87,10 +92,11 @@ class WikiScraper():
             sys.exit(0)
 
         except BaseException as e:
-            message = "Exception in get_html: " + str(e)
-            base.prompt_print(message)
+                message = "Exception in get_html: " + str(e)
+                base.prompt_print(message)
 
-        if res is not None:
+
+        if res != None:
             # TODO: Send notification on 404. Site down? other codes?
             if res.status_code != 200:
                 res = None

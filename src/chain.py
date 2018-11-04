@@ -46,7 +46,7 @@ class Chain():
         for word in txt.split():
             word = word.lower()
             # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
-            word = re.sub(r"[\-\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
+            word = re.sub(r"[\-\(\)\"\“\”\:\'\[\]]", '', word)
 
             self.corpus.append(word)
 
@@ -79,12 +79,21 @@ class Chain():
             # random word.
             value = self.walk()
             chars = len(' '.join(self.values) + " " + value)
-            print(chars)
+            # print(chars)
             if chars > num_chars:
                 character_capped = True
             else:
                 self.values.append(value)
 
+
+        # TODO: move grammar stuff out of chain.
+
+        # Remove leading sentence whitespace, if present
+        if len(self.values[0]) > 0: # No idea why this would be zero, but it works.
+            if self.values[0][0] == " ":
+                self.values[0] = self.values[0][1:]
+
+        #Capitalize first character in first word.
         self.values[0] = self.values[0].title()
 
     def instantiate_model(self, save=True):
@@ -169,7 +178,7 @@ class Chain():
             third_last_word = self.values[-3]
             tripple_word = third_last_word + " " + second_last_word + " " + last_word
             if tripple_word in self.model:
-                print(self.model[tripple_word])
+                # print(self.model[tripple_word])
 
                 if len(self.model[tripple_word].keys()) > 3:
                     chance = 85
@@ -181,13 +190,13 @@ class Chain():
                 cmp_val = 100 - chance
                 if randint(1, 100) > cmp_val:
                     key_to_check = tripple_word
-                    print("selecting tripple key:", tripple_word)
+                    # print("selecting tripple key:", tripple_word)
 
         elif len(self.values) >= 2:
             second_last_word = self.values[-2]
             double_word = second_last_word + " " + last_word
             if double_word in self.model:
-                print(self.model[double_word])
+                # print(self.model[double_word])
 
                 if len(self.model[double_word].keys()) > 3:
                     chance = 95
@@ -199,7 +208,7 @@ class Chain():
                 cmp_val = 100 - chance
                 if randint(1, 100) >= cmp_val:
                     key_to_check = double_word
-                    print("selecting double key:", double_word)
+                    # print("selecting double key:", double_word)
 
         chain = self.model[key_to_check]
 
@@ -217,6 +226,6 @@ class Chain():
         # TODO: Larger chance to pick word that has many values
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
-        print("word selected:", step)
+        # print("word selected:", step)
 
         return step
