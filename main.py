@@ -53,10 +53,12 @@ def main():
             chain.values = chain.values[:-1]
 
 
-
         # Join the words into a string.
         sentence = ' '.join(chain.values)
 
+        # Remove trailing commas
+        if sentence[-1] == ",":
+            sentence = sentence[:-2]
 
         # Append random punctuation if missing.
         punctuations = [".", "!", "?"]
