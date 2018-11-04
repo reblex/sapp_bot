@@ -19,6 +19,8 @@ class Chain():
         self.model = None
         self.values = None
 
+        # TODO: Make newline not continue as sentence? Names get combined together.
+
     def build_model(self):
         """Build a new Model from Corpus"""
         # Load corpus
@@ -43,7 +45,8 @@ class Chain():
 
         for word in txt.split():
             word = word.lower()
-            word = re.sub(r"[\,\.\?\!\(\)\"\“\”\:\[\]]", '', word)
+            # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
+            word = re.sub(r"[\-\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
 
             self.corpus.append(word)
 
@@ -60,18 +63,27 @@ class Chain():
         # 2. instantiate_model()
         pass
 
-    def generate(self, steps):
+    def generate(self, num_chars, fw=None):
         """Generate Markov Chain based on Model"""
         # Pick a random capitalized first word.
         first_word = np.random.choice(self.corpus)
 
+        if fw != None:
+            first_word = fw
+
         self.values = [first_word]
 
-        for _ in range(steps):
+        character_capped = False
+        while not character_capped:
             # TODO: If there are too few words possible, maybe pick another
             # random word.
-            # print(self.model[self.values[-1]])
-            self.values.append(self.walk())
+            value = self.walk()
+            chars = len(' '.join(self.values) + " " + value)
+            print(chars)
+            if chars > num_chars:
+                character_capped = True
+            else:
+                self.values.append(value)
 
         self.values[0] = self.values[0].title()
 
@@ -147,38 +159,47 @@ class Chain():
         last_word = self.values[-1]
         key_to_check = last_word
 
+        chance = None  # Chance in percentage to pick double/tripple/quad key
+
+        # TODO: Make it possible to randomly start building towards a tripple
+        # key while sentence is still less than 3 words.
+
         if len(self.values) >= 3:
             second_last_word = self.values[-2]
             third_last_word = self.values[-3]
             tripple_word = third_last_word + " " + second_last_word + " " + last_word
             if tripple_word in self.model:
-                # print(self.model[tripple_word])
-                # Default rand_max: 10 gives 30% chance of picking double word value
-                # If double word has more than one value, increase chance to pick a double word value.
-                rand_max = 10
-                if len(self.model[tripple_word].keys()) > 3:
-                    rand_max = 25
-                elif len(self.model[tripple_word].keys()) > 1:
-                    rand_max = 15
+                print(self.model[tripple_word])
 
-                if randint(1, rand_max) > 7:
+                if len(self.model[tripple_word].keys()) > 3:
+                    chance = 85
+                elif len(self.model[tripple_word].keys()) > 1:
+                    chance = 80
+                else:
+                    chance = 50
+
+                cmp_val = 100 - chance
+                if randint(1, 100) > cmp_val:
                     key_to_check = tripple_word
+                    print("selecting tripple key:", tripple_word)
 
         elif len(self.values) >= 2:
             second_last_word = self.values[-2]
             double_word = second_last_word + " " + last_word
             if double_word in self.model:
-                # print(self.model[double_word])
-                # Default rand_max: 10 gives 30% chance of picking double word value
-                # If double word has more than one value, increase chance to pick a double word value.
-                rand_max = 10
-                if len(self.model[double_word].keys()) > 3:
-                    rand_max = 25
-                elif len(self.model[double_word].keys()) > 1:
-                    rand_max = 15
+                print(self.model[double_word])
 
-                if randint(1, rand_max) > 7:
+                if len(self.model[double_word].keys()) > 3:
+                    chance = 95
+                elif len(self.model[double_word].keys()) > 1:
+                    chance = 90
+                else:
+                    chance = 70
+
+                cmp_val = 100 - chance
+                if randint(1, 100) >= cmp_val:
                     key_to_check = double_word
+                    print("selecting double key:", double_word)
 
         chain = self.model[key_to_check]
 
@@ -196,6 +217,6 @@ class Chain():
         # TODO: Larger chance to pick word that has many values
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
-        # print("word:", step)
+        print("word selected:", step)
 
         return step
