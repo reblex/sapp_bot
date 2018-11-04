@@ -227,12 +227,15 @@ class Chain():
         # Multiply each value by the normalizer
         probabilities = [x * normalizer for x in chain.values()]
 
-        # TODO: Check if there is a greater match in double word keys.
-        # Reduced chance of picking multiple tripples, quads...
 
         # TODO: Larger chance to pick word that has many values
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
+
+        # Dont pick two numbers in a row.
+        if self.values[-1].isdigit():
+            while step.isdigit():
+                step = np.random.choice(keys, 1, p=probabilities)[0]
 
 
         # print("word selected:", step)
