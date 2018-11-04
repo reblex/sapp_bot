@@ -174,7 +174,7 @@ class Chain():
         # TODO: Make it possible to randomly start building towards a tripple
         # key while sentence is still less than 3 words.
 
-        if len(self.values) >= 3:
+        if len(self.values) >= 3 and randint(1, 100) > 20: # 80% chance to try tripple key.
             second_last_word = self.values[-2]
             third_last_word = self.values[-3]
             tripple_word = third_last_word + " " + second_last_word + " " + last_word
@@ -193,7 +193,7 @@ class Chain():
                     key_to_check = tripple_word
                     # print("selecting tripple key:", tripple_word)
 
-        elif len(self.values) >= 2:
+        elif len(self.values) >= 2 and randint(1, 100) > 10: # Else 90% chance to try double key.
             second_last_word = self.values[-2]
             double_word = second_last_word + " " + last_word
             if double_word in self.model:
