@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """ Main interface """
 
+from random import randint
+
 from src.chain import Chain
 from src.wiki_scraper import WikiScraper
-from random import randint
 from src.chain import Chain
 
 
@@ -16,18 +17,47 @@ def main():
 
     chain = Chain("corpus")
     chain.build_model()
-    chain.generate(20)
 
-    # Join the words into a string.
-    sentance = ' '.join(chain.values)
+    MAX_WORD_OCCURRENCE = 2
 
-    # Append random punctuation if missing.
-    punctuations = [".", "!", "?"]
-    if sentance[-1] not in punctuations:
-        sentance += punctuations[randint(0, len(punctuations) - 1)]
+    with open('conjunctions.txt', 'r') as f:
+        CONJUNCTIONS = f.read().split("\n")
 
-    # Print the resulting sentance.
-    print(sentance)
+
+    for i in range(1):
+
+        # Generate senctances until one is deemed worthy..
+        too_many_word_occurences = True
+        while too_many_word_occurences:
+            chain.generate(20)
+            too_many_word_occurences = False
+
+            for word in chain.values:
+                count_occurrences = chain.values.count(word)
+                if count_occurrences > MAX_WORD_OCCURRENCE:
+                    too_many_word_occurences = True
+                    break
+
+        # TODO: Disallow multiple numbers in a row. (multiple words only containing numbers)
+
+        # Remove conjunction if present at end of sentence.
+        if chain.values[-1] in CONJUNCTIONS:
+            chain.values = chain.values[:-1]
+
+
+
+        # Join the words into a string.
+        sentence = ' '.join(chain.values)
+
+
+        # Append random punctuation if missing.
+        punctuations = [".", "!", "?"]
+        if sentence[-1] not in punctuations:
+            sentence += punctuations[randint(0, len(punctuations) - 1)]
+
+
+        # Print the resulting sentence.
+        print(sentence + "\n")
 
 
 if __name__ == "__main__":
