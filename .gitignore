@@ -2,3 +2,4 @@ models
 corpus*
 __pycache__
 blacklist.txt
+word_blacklist.txt

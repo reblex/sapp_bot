@@ -12,6 +12,7 @@ class Chain():
     def __init__(self, corpus_path, model=None):
         self.corpus_path = corpus_path
         self.blacklist = "blacklist.txt"
+        self.word_blacklist = "word_blacklist.txt"
         self.corpus_pairs = None
         self.corpus_tripples = None
         self.corpus_quads = None
@@ -30,6 +31,11 @@ class Chain():
             with open(self.blacklist, encoding='utf8') as f:
                 blacklist = f.read().split("\n")
 
+        word_blacklist = list() # Ignore word_blacklisted corpus files
+        if os.path.isfile(self.word_blacklist):
+            with open(self.word_blacklist, encoding='utf8') as f:
+                word_blacklist = f.read().split("\n")
+
         if os.path.isdir(self.corpus_path):
             for (dirpath, _, filenames) in os.walk(self.corpus_path):
                 for filename in filenames:
@@ -44,12 +50,12 @@ class Chain():
         self.corpus = list()
 
         for word in txt.split():
-            word = word.lower()
-            # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
-            word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
-            word = re.sub(r"[\/]", ' ', word)
-
-            self.corpus.append(word)
+            if word not in word_blacklist:
+                word = word.lower()
+                # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
+                word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
+                word = re.sub(r"[\/]", ' ', word)
+                self.corpus.append(word)
 
         # Yield a generator object from corpus
         self.corpus_pairs = self.make_pairs()
@@ -227,6 +233,8 @@ class Chain():
         # TODO: Larger chance to pick word that has many values
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
+
+
         # print("word selected:", step)
 
         return step
