@@ -47,6 +47,7 @@ class Chain():
             word = word.lower()
             # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
             word = re.sub(r"[\-\(\)\"\“\”\:\'\[\]]", '', word)
+            word = re.sub(r"[\/]", ' ', word)
 
             self.corpus.append(word)
 
