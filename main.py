@@ -16,7 +16,7 @@ def main():
     # ws.set_page_list()
     # ws.build_corpus()
 
-    chain = Chain("corpus", "whiplash")
+    chain = Chain("corpus")
     chain.build_model()
 
     MAX_WORD_OCCURRENCE = 2
@@ -28,11 +28,12 @@ def main():
 
         # Generate senctances until one is deemed worthy..
         too_many_word_occurences = True
-        while too_many_word_occurences: # TODO: also check for too many punctuations.
+        while too_many_word_occurences:
+            try:
+                chain.generate(randint(120, 260))
+            except Exception as e:
+                continue
 
-            # TODO: Generate random character max, up to twitter max.
-            # chain.generate(279) # 1 lower than max to allow for punctuation.
-            chain.generate(randint(120, 260))
             too_many_word_occurences = False
 
             for word in chain.values:
@@ -65,7 +66,7 @@ def main():
         sentence = ' '.join(words)
 
         # Append random punctuation if missing (at end).
-        punctuations = [".", "!", "?"]
+        punctuations = [".", ".", ".", "!", "?"]
         if sentence[-1] not in punctuations:
             sentence += punctuations[randint(0, len(punctuations) - 1)]
 

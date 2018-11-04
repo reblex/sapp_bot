@@ -49,8 +49,10 @@ class Chain():
 
         self.corpus = list()
 
+        puncts = ["-", ",", ".", "?", "!", "\\", "/", ";", ":"]
+
         for word in txt.split():
-            if word not in word_blacklist:
+            if word not in word_blacklist and word not in puncts:
                 word = word.lower()
                 # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
                 word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
@@ -232,10 +234,18 @@ class Chain():
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
 
+        # 40% chance to pick another word if chosen words key only has two or less values.
+        while len(self.model[step].keys()) <= 2 and randint(1, 100) > 60:
+            step = np.random.choice(keys, 1, p=probabilities)[0]
+
         # Dont pick two numbers in a row.
-        if self.values[-1].isdigit():
+        if self.values[-1].isdigit() and len(self.model[step]) > 1:
             while step.isdigit():
-                step = np.random.choice(keys, 1, p=probabilities)[0]
+                # Small chance to just pick a random (non digit) word instead.
+                if passrandint(1, 100) > 99:
+                    step = np.random.choice(self.model, 1)[0]
+                else:
+                    step = np.random.choice(keys, 1, p=probabilities)[0]
 
 
         # print("word selected:", step)
