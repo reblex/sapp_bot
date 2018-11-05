@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+""" Wiki Scraper """
 
-import requests
 import sys
 import json
 import os
 import re
 import time
+import requests
 
 import src.base as base
 
@@ -27,7 +28,7 @@ class WikiScraper():
             url = self.base_url + "/wiki/" + page_title
             res = self.get_url(url)
 
-            regex = "<p>(.*?)<\/p>"
+            regex = r"<p>(.*?)<\/p>"
 
             content = re.findall(regex, res.text, re.DOTALL)
             content_text = ""
@@ -48,7 +49,7 @@ class WikiScraper():
             content = re.sub(r'http\S+', '', content)
 
             # Remove multiple whitespace?
-            content = re.sub('\s{2,}', ' ', content).strip()
+            content = re.sub(r'\s{2,}', ' ', content).strip()
 
             # Fix "&" tokens
             content = re.sub('&amp;', '&', content)
@@ -56,9 +57,9 @@ class WikiScraper():
             if not os.path.exists(self.corpus_path):
                 os.makedirs(self.corpus_path)
 
-            # Strip slashes from page_title and set as file_nameselfself.
+            # Strip slashes from page_title and set as file_name.
             # Then build file_path.
-            file_name = re.sub("[\/]", '_', page_title)
+            file_name = re.sub(r"[\/]", '_', page_title)
             file_path = self.corpus_path + "/" + file_name + ".txt"
 
             with open(file_path, "w") as file:
@@ -101,11 +102,10 @@ class WikiScraper():
             sys.exit(0)
 
         except BaseException as e:
-                message = "Exception in get_html: " + str(e)
-                base.prompt_print(message)
+            message = "Exception in get_html: " + str(e)
+            base.prompt_print(message)
 
-
-        if res != None:
+        if res is not None:
             # TODO: Send notification on 404. Site down? other codes?
             if res.status_code != 200:
                 res = None

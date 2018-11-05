@@ -6,7 +6,6 @@ import re
 
 from src.chain import Chain
 from src.wiki_scraper import WikiScraper
-from src.chain import Chain
 
 
 def main():
@@ -24,7 +23,7 @@ def main():
     with open('conjunctions.txt', 'r') as f:
         CONJUNCTIONS = f.read().split("\n")
 
-    for i in range(5):
+    for _ in range(5):
 
         # Generate senctances until one is deemed worthy..
         too_many_word_occurences = True
@@ -42,7 +41,6 @@ def main():
                     too_many_word_occurences = True
                     break
 
-
         # Remove conjunction if present at end of sentence.
         if chain.values[-1] in CONJUNCTIONS:
             chain.values = chain.values[:-1]
@@ -55,7 +53,7 @@ def main():
             sentence = sentence[:-2]
 
         # Make sure punctuations (That are followed by words) are followed by space.
-        sentence = re.sub('(?<=[.,!?()])([\w\d])(?! )', r'\0 \1', sentence).strip()
+        sentence = re.sub(r'(?<=[.,!?()])([\w\d])(?! )', r'\0 \1', sentence).strip()
 
         # Capitalize first letter of word after punctuation.
         words = sentence.split()
@@ -69,7 +67,6 @@ def main():
         punctuations = [".", ".", ".", "!", "?"]
         if sentence[-1] not in punctuations:
             sentence += punctuations[randint(0, len(punctuations) - 1)]
-
 
         # Print the resulting sentence.
         print(sentence + "\n")

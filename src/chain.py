@@ -246,7 +246,6 @@ class Chain():
 
         step = np.random.choice(keys, 1, p=probabilities)[0]
 
-
         # Dont pick two numbers in a row.
         if self.values[-1].isdigit() and len(self.model[step]) > 1:
             while step.isdigit():
@@ -255,7 +254,6 @@ class Chain():
                     step = np.random.choice(list(self.model.keys()), 1)[0]
                 else:
                     step = np.random.choice(keys, 1, p=probabilities)[0]
-
 
         # print("word selected:", step)
 
