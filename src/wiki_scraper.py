@@ -44,8 +44,14 @@ class WikiScraper():
             content = re.sub('<.*?>', '', content)
             content = re.sub("</p", '', content)
 
+            # Remove web links
+            content = re.sub(r'http\S+', '', content)
+
             # Remove multiple whitespace?
             content = re.sub('\s{2,}', ' ', content).strip()
+
+            # Fix "&" tokens
+            content = re.sub('&amp;', '&', content)
 
             if not os.path.exists(self.corpus_path):
                 os.makedirs(self.corpus_path)

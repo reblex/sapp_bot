@@ -55,7 +55,7 @@ class Chain():
             if word not in word_blacklist and word not in puncts:
                 word = word.lower()
                 # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
-                word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
+                word = re.sub(r"[\(\)\"\“\”\:\;\'\[\]]", '', word)
                 word = re.sub(r"[\/]", ' ', word)
                 self.corpus.append(word)
 
@@ -79,6 +79,13 @@ class Chain():
 
         if fw != None:
             first_word = fw
+        else:
+            # 70% chance to pick another random word if chosen words key only has two or less values.
+            if len(self.model[first_word].values()) <= 2 and randint(1, 100) > 30:
+                try:
+                    first_word = np.random.choice(list(self.model.keys()), 1)[0]
+                except Exception as e:
+                    pass # TODO: Handle this.
 
         self.values = [first_word]
 
@@ -89,6 +96,14 @@ class Chain():
             value = self.walk()
             chars = len(' '.join(self.values) + " " + value)
             # print(chars)
+
+            # 60% chance to pick another random word if chosen words key only has one value.
+            if len(self.model[value].values()) == 1 and randint(1, 100) > 40:
+                try:
+                    value = np.random.choice(list(self.model.keys()), 1)[0]
+                except Exception as e:
+                    pass # TODO: Handle this.
+
             if chars > num_chars:
                 character_capped = True
             else:
@@ -229,21 +244,15 @@ class Chain():
         # Multiply each value by the normalizer
         probabilities = [x * normalizer for x in chain.values()]
 
-
-        # TODO: Larger chance to pick word that has many values
-
         step = np.random.choice(keys, 1, p=probabilities)[0]
 
-        # 40% chance to pick another word if chosen words key only has two or less values.
-        while len(self.model[step].keys()) <= 2 and randint(1, 100) > 60:
-            step = np.random.choice(keys, 1, p=probabilities)[0]
 
         # Dont pick two numbers in a row.
         if self.values[-1].isdigit() and len(self.model[step]) > 1:
             while step.isdigit():
                 # Small chance to just pick a random (non digit) word instead.
                 if passrandint(1, 100) > 99:
-                    step = np.random.choice(self.model, 1)[0]
+                    step = np.random.choice(list(self.model.keys()), 1)[0]
                 else:
                     step = np.random.choice(keys, 1, p=probabilities)[0]
 
