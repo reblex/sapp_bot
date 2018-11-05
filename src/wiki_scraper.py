@@ -71,8 +71,9 @@ class WikiScraper():
                 time.sleep(0.8)
             i += 1
 
-    def set_page_list(self):
+    def update_all_pages(self):
         """Get list of pages available on the wiki"""
+        self.pages = list()
         end_of_categories = False
         continue_param = ""
 
@@ -90,13 +91,15 @@ class WikiScraper():
             else:
                 end_of_categories = True
 
+        self.build_corpus()
+
     def update_recent_changes(self):
         """Update pages that have been edited/created yesterday"""
+        self.pages = list()
         end_of_updates = False
         continue_param = ""
 
         while not end_of_updates:
-            self.pages = list()
             url = self.base_url + "/api.php?action=query&list=recentchanges&rcprop=title|timestamp&rclimit=50&format=json" + continue_param
             res = self.get_url(url)
             # TODO: Check for None result.
