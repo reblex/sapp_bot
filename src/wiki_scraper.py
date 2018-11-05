@@ -7,6 +7,7 @@ import os
 import re
 import time
 import requests
+from datetime import datetime
 
 import src.base as base
 
@@ -25,6 +26,7 @@ class WikiScraper():
 
         i = 0
         for page_title in self.pages:
+            base.prompt_print("Fetching page: " + page_title)
             url = self.base_url + "/wiki/" + page_title
             res = self.get_url(url)
 
@@ -65,7 +67,6 @@ class WikiScraper():
             with open(file_path, "w") as file:
                 file.write(content)
 
-            base.prompt_print(str(i))
             if i % 5 == 0:
                 time.sleep(0.8)
             i += 1
@@ -88,6 +89,32 @@ class WikiScraper():
                 continue_param = "&apfrom=" + json_data["continue"]["apcontinue"]
             else:
                 end_of_categories = True
+
+    def update_recent_changes(self):
+        """Update pages that have been edited/created today"""
+        end_of_updates = False
+        continue_param = ""
+
+        while not end_of_updates:
+            self.pages = list()
+            url = self.base_url + "/api.php?action=query&list=recentchanges&rcprop=title|timestamp&rclimit=25&format=json" + continue_param
+            res = self.get_url(url)
+            # TODO: Check for None result.
+
+            json_data = json.loads(res.text)
+            post_day = None
+            today = datetime.today().day
+            for page in json_data["query"]["recentchanges"]:
+                post_day = datetime.strptime(page["timestamp"][:10], '%Y-%m-%d').day
+                if post_day == today and page["title"] not in self.pages:
+                    self.pages.append(page["title"])
+
+            if post_day == today:
+                continue_param = "&rcstart=" + json_data["continue"]["rccontinue"]
+            else:
+                end_of_updates = True
+
+        self.build_corpus()
 
     def get_url(self, url):
         """General GET request"""
