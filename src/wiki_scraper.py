@@ -7,7 +7,7 @@ import os
 import re
 import time
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import src.base as base
 
@@ -91,25 +91,26 @@ class WikiScraper():
                 end_of_categories = True
 
     def update_recent_changes(self):
-        """Update pages that have been edited/created today"""
+        """Update pages that have been edited/created yesterday"""
         end_of_updates = False
         continue_param = ""
 
         while not end_of_updates:
             self.pages = list()
-            url = self.base_url + "/api.php?action=query&list=recentchanges&rcprop=title|timestamp&rclimit=25&format=json" + continue_param
+            url = self.base_url + "/api.php?action=query&list=recentchanges&rcprop=title|timestamp&rclimit=50&format=json" + continue_param
             res = self.get_url(url)
             # TODO: Check for None result.
 
             json_data = json.loads(res.text)
             post_day = None
-            today = datetime.today().day
+            yesterday = datetime.today() - timedelta(1)
+            yesterday = yesterday.day
             for page in json_data["query"]["recentchanges"]:
                 post_day = datetime.strptime(page["timestamp"][:10], '%Y-%m-%d').day
-                if post_day == today and page["title"] not in self.pages:
+                if post_day == yesterday and page["title"] not in self.pages:
                     self.pages.append(page["title"])
 
-            if post_day == today:
+            if post_day == yesterday:
                 continue_param = "&rcstart=" + json_data["continue"]["rccontinue"]
             else:
                 end_of_updates = True
