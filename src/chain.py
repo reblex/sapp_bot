@@ -98,7 +98,6 @@ class Chain():
 
         for key in list(self.model.keys()):
             if re.match(multi_key_search, key):
-
                 multi_keys.append(key)
 
         if len(multi_keys) > 0:
@@ -189,58 +188,35 @@ class Chain():
         Each key appearance rate is turned into a probability.
         Then a random key is selected at random, based on probability.
         """
+        key_to_check = self.values[-1] # If no multikey is chosen, just use last word.
+        chance = None
 
-        last_word = self.values[-1]
-        key_to_check = last_word
-        multi_key_selected = False
+        for i in range(self.NUM_GENERATORS, 1, -1):
+            # If there are too few words to check for 'i' number of keys, skip.
+            if len(self.values) < self.NUM_GENERATORS:
+                continue
 
-        chance = None  # Chance in percentage to pick double/tripple/quad key
+            # Base 80% chance to pick multi-key, for now.
+            if randint(1, 100) > 20:
+                multi = ' '.join(self.values)
+                # print(i, multi)
+                start_key_pos = len(self.values) - i
+                key = ' '.join(multi.split(' ')[start_key_pos:])
 
-        # TODO: Make it possible to randomly start building towards a tripple
-        # key while sentence is still less than 3 words.
-
-        if len(self.values) >= 3 and randint(1, 100) > 20: # 80% chance to try tripple key.
-            second_last_word = self.values[-2]
-            third_last_word = self.values[-3]
-            tripple_word = third_last_word + " " + second_last_word + " " + last_word
-            if tripple_word in self.model:
-                # print(self.model[tripple_word])
-
-                if len(self.model[tripple_word].keys()) > 3:
-                    chance = 90
-                elif len(self.model[tripple_word].keys()) > 1:
-                    chance = 85
-                else:
-                    chance = 45
-
-                cmp_val = 100 - chance
-                if randint(1, 100) > cmp_val:
-                    key_to_check = tripple_word
-                    multi_key_selected = False
-                    # print("selecting tripple key:", tripple_word)
-
-        if not multi_key_selected:
-            if len(self.values) >= 2 and randint(1, 100) > 10: # Else 90% chance to try double key.
-                second_last_word = self.values[-2]
-                double_word = second_last_word + " " + last_word
-                if double_word in self.model:
-                    # print(self.model[double_word])
-
-                    if len(self.model[double_word].keys()) > 3:
-                        chance = 95
-                    elif len(self.model[double_word].keys()) > 1:
+                if key in self.model:
+                    if len(self.model[tripple_word].keys()) > 3:
                         chance = 90
+                    elif len(self.model[tripple_word].keys()) > 1:
+                        chance = 85
                     else:
-                        chance = 70
+                        chance = 25
 
                     cmp_val = 100 - chance
-                    if randint(1, 100) >= cmp_val:
-                        key_to_check = double_word
-                        multi_key_selected = False
-                        # print("selecting double key:", double_word)
+                    if randint(1, 100) > cmp_val:
+                        key_to_check = key
+                        break
 
         chain = self.model[key_to_check]
-
         keys = list(chain.keys())
 
         # Calculate the normalizer, using: (1 / (sum of values))
