@@ -31,16 +31,9 @@ class Chain():
             with open(self.blacklist, encoding='utf8') as f:
                 blacklist = f.read().split("\n")
 
-        word_blacklist = list() # Ignore word_blacklisted corpus files
-        if os.path.isfile(self.word_blacklist):
-            with open(self.word_blacklist, encoding='utf8') as f:
-                word_blacklist = f.read().split("\n")
-
         if os.path.isdir(self.corpus_path):
             for (dirpath, _, filenames) in os.walk(self.corpus_path):
                 for filename in filenames:
-                    if filename in blacklist:
-                        continue
                     with open(os.path.join(dirpath, filename)) as f:
                         txt += f.read()
         else:
@@ -48,6 +41,12 @@ class Chain():
                 txt = f.read()
 
         self.corpus = list()
+
+
+        word_blacklist = list() # Ignore word_blacklisted corpus files
+        if os.path.isfile(self.word_blacklist):
+            with open(self.word_blacklist, encoding='utf8') as f:
+                word_blacklist = f.read().split("\n")
 
         puncts = ["-", ",", ".", "?", "!", "\\", "/", ";", ":"]
 
@@ -59,7 +58,7 @@ class Chain():
                 word = re.sub(r"[\/]", ' ', word)
                 self.corpus.append(word)
 
-        # Yield a generator object from corpus
+        # Yield a generator objects from corpus
         self.corpus_pairs = self.make_pairs()
         self.corpus_tripples = self.make_tripples()
         self.corpus_quads = self.make_quads()

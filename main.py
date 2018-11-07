@@ -56,10 +56,10 @@ def main():
 
                 sentence = Sentence(chain, randint(120, 260))
                 sentence.generate()
+                print(str(sentence) + "\n")
             except Exception as e:
                 print(str(e))
-
-            print(str(sentence) + "\n")
+    
     elif args[0] == 'update':
         opts = args[1:]
         all = False

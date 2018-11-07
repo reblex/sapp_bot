@@ -7,6 +7,7 @@ import os
 import re
 import time
 import requests
+import progressbar
 from datetime import datetime, timedelta
 
 import src.base as base
@@ -17,18 +18,29 @@ class WikiScraper():
     def __init__(self):
         self.base_url = "https://minervawikin.nu"
         self.pages = list()
+        self.blacklist_file = "blacklist.txt"
+        self.blacklist = list()
         self.corpus_folder = "corpus"
         self.corpus_path = "corpus"
+
+
+        if os.path.isfile(self.blacklist_file):
+            with open(self.blacklist_file, encoding='utf8') as f:
+                self.blacklist = f.read().split("\n")
+                
 
     def build_corpus(self):
         """Build corpus files"""
         # TODO: Find out why some words have  spaces in them (start of sentence)
-
         i = 0
+
+        bar = progressbar.ProgressBar(maxval=len(self.pages), term_width=50, \
+        widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+        bar.start()
         for page_title in self.pages:
-            base.prompt_print("Fetching page: " + page_title)
             url = self.base_url + "/wiki/" + page_title
             res = self.get_url(url)
+            bar.update(i+1)
 
             regex = r"<p>(.*?)<\/p>"
 
@@ -71,6 +83,8 @@ class WikiScraper():
                 time.sleep(0.8)
             i += 1
 
+        bar.finish()
+
     def update_all_pages(self):
         """Get list of pages available on the wiki"""
         self.pages = list()
@@ -84,7 +98,9 @@ class WikiScraper():
 
             json_data = json.loads(res.text)
             for page in json_data["query"]["allpages"]:
-                self.pages.append(page["title"])
+                # Skip blacklisted pages
+                if page["title"] not in self.blacklist:
+                    self.pages.append(page["title"])
 
             if "continue" in json_data:
                 continue_param = "&apfrom=" + json_data["continue"]["apcontinue"]
@@ -107,8 +123,12 @@ class WikiScraper():
             post_day = None
             yesterday = datetime.today() - timedelta(1)
             yesterday = yesterday.day
-            
+
             for page in json_data["query"]["recentchanges"]:
+                # Skip blacklisted pages
+                if page["title"] not in self.blacklist:
+                    self.pages.append(page["title"])
+
                 post_day = datetime.strptime(page["timestamp"][:10], '%Y-%m-%d').day
                 if post_day == yesterday and page["title"] not in self.pages:
                     self.pages.append(page["title"])
