@@ -48,15 +48,16 @@ class Chain():
             with open(self.word_blacklist, encoding='utf8') as f:
                 word_blacklist = f.read().split("\n")
 
-        puncts = ["-", ",", ".", "?", "!", "\\", "/", ";", ":"]
+        punct_only_word = "^[\-\,\.\/?\!\\\/\;\:\"\(\)]+$"
 
         for word in txt.split():
-            if word not in word_blacklist and word not in puncts:
+            if word not in word_blacklist and re.match(punct_only_word, word) == None:
                 word = word.lower()
                 # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
                 word = re.sub(r"[\(\)\"\“\”\:\;\'\[\]]", '', word)
                 word = re.sub(r"[\/]", ' ', word)
                 self.corpus.append(word)
+
 
         # Yield a generator objects from corpus
         self.corpus_pairs = self.make_pairs()
