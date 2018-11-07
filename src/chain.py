@@ -80,8 +80,9 @@ class Chain():
         if fw != None:
             first_word = fw
         else:
-            # 70% chance to pick another random word if chosen words key only has two or less values.
-            if len(self.model[first_word].values()) <= 2 and randint(1, 100) > 30:
+            # 90% chance to pick another random word if chosen words key only has two or less values.
+            while len(self.model[first_word].values()) <= 2 and randint(1, 100) > 10:
+                print("picking other")
                 try:
                     first_word = np.random.choice(list(self.model.keys()), 1)[0]
                 except Exception as e:
@@ -89,6 +90,22 @@ class Chain():
 
         self.values = [first_word]
 
+        # Pick a second word that is part of a multi-key, if possible.
+        multi_key_search = '^' + first_word + '\s(.+?(?:\s.+?)*)'
+        multi_keys = list()
+
+        for key in list(self.model.keys()):
+            if re.match(multi_key_search, key):
+
+                multi_keys.append(key)
+
+        if len(multi_keys) > 0:
+            multi_key = np.random.choice(multi_keys, 1)[0]
+            word = ' '.join(multi_key.split(' ')[1:])
+            self.values.append(word)
+
+
+        # While there are characters left, keep chosing new words.
         character_capped = False
         while not character_capped:
             # TODO: If there are too few words possible, maybe pick another
