@@ -208,6 +208,7 @@ class Chain():
 
         last_word = self.values[-1]
         key_to_check = last_word
+        multi_key_selected = False
 
         chance = None  # Chance in percentage to pick double/tripple/quad key
 
@@ -222,34 +223,37 @@ class Chain():
                 # print(self.model[tripple_word])
 
                 if len(self.model[tripple_word].keys()) > 3:
-                    chance = 85
+                    chance = 90
                 elif len(self.model[tripple_word].keys()) > 1:
-                    chance = 80
+                    chance = 85
                 else:
-                    chance = 50
+                    chance = 45
 
                 cmp_val = 100 - chance
                 if randint(1, 100) > cmp_val:
                     key_to_check = tripple_word
+                    multi_key_selected = False
                     # print("selecting tripple key:", tripple_word)
 
-        elif len(self.values) >= 2 and randint(1, 100) > 10: # Else 90% chance to try double key.
-            second_last_word = self.values[-2]
-            double_word = second_last_word + " " + last_word
-            if double_word in self.model:
-                # print(self.model[double_word])
+        if not multi_key_selected:
+            if len(self.values) >= 2 and randint(1, 100) > 10: # Else 90% chance to try double key.
+                second_last_word = self.values[-2]
+                double_word = second_last_word + " " + last_word
+                if double_word in self.model:
+                    # print(self.model[double_word])
 
-                if len(self.model[double_word].keys()) > 3:
-                    chance = 95
-                elif len(self.model[double_word].keys()) > 1:
-                    chance = 90
-                else:
-                    chance = 70
+                    if len(self.model[double_word].keys()) > 3:
+                        chance = 95
+                    elif len(self.model[double_word].keys()) > 1:
+                        chance = 90
+                    else:
+                        chance = 70
 
-                cmp_val = 100 - chance
-                if randint(1, 100) >= cmp_val:
-                    key_to_check = double_word
-                    # print("selecting double key:", double_word)
+                    cmp_val = 100 - chance
+                    if randint(1, 100) >= cmp_val:
+                        key_to_check = double_word
+                        multi_key_selected = False
+                        # print("selecting double key:", double_word)
 
         chain = self.model[key_to_check]
 
