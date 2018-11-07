@@ -82,7 +82,6 @@ class Chain():
         else:
             # 90% chance to pick another random word if chosen words key only has two or less values.
             while len(self.model[first_word].values()) <= 2 and randint(1, 100) > 10:
-                print("picking other")
                 try:
                     first_word = np.random.choice(list(self.model.keys()), 1)[0]
                 except Exception as e:
