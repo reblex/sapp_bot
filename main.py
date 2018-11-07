@@ -49,17 +49,17 @@ def main():
 
         # TODO: seond option = first_word
 
+        chain = Chain("corpus")
+        chain.build_model()
+
         for _ in range(int(count)):
             try:
-                chain = Chain("corpus")
-                chain.build_model()
-
                 sentence = Sentence(chain, randint(120, 260))
                 sentence.generate()
                 print(str(sentence) + "\n")
             except Exception as e:
                 print(str(e))
-    
+
     elif args[0] == 'update':
         opts = args[1:]
         all = False
