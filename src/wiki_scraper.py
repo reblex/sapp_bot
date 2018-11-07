@@ -103,18 +103,18 @@ class WikiScraper():
             url = self.base_url + "/api.php?action=query&list=recentchanges&rcprop=title|timestamp&rclimit=50&format=json" + continue_param
             res = self.get_url(url)
             # TODO: Check for None result.
-
-            json_data = json.loads(res.text)
+            json_data = res.json()
             post_day = None
             yesterday = datetime.today() - timedelta(1)
             yesterday = yesterday.day
+            
             for page in json_data["query"]["recentchanges"]:
                 post_day = datetime.strptime(page["timestamp"][:10], '%Y-%m-%d').day
                 if post_day == yesterday and page["title"] not in self.pages:
                     self.pages.append(page["title"])
 
             if post_day == yesterday:
-                continue_param = "&rcstart=" + json_data["continue"]["rccontinue"]
+                continue_param = "&rcstart=" + json_data["continue"]["rccontinue"][:14]
             else:
                 end_of_updates = True
 
