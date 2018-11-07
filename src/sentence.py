@@ -16,6 +16,7 @@ class Sentence():
         if filters != None:
             self.filters = filters  # Applied in order listed.
         else:
+            # Alwas in this order!
             self.filters = ["trailing_conjunction",
                             "trailing_commas",
                             "punctuation_whitespace",
@@ -68,8 +69,13 @@ class Sentence():
 
     def _trailing_conjunction(self):
         """Remove conjunction if present at end of sentence."""
-        if self.words[-1] in self.CONJUNCTIONS:
-            self.words = self.words[:-1]
+        last_word =  re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', self.words[-1])
+        b = last_word in self.CONJUNCTIONS
+        while last_word in self.CONJUNCTIONS:
+            del self.words[-1]
+            last_word =  re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', self.words[-1])
+
+        self.string = ' '.join(self.words)
 
     def _trailing_commas(self):
         """Remove trailing comma, if present."""

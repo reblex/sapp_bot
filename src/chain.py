@@ -54,7 +54,7 @@ class Chain():
             if word not in word_blacklist and re.match(punct_only_word, word) == None:
                 word = word.lower()
                 # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
-                word = re.sub(r"[\(\)\"\“\”\:\;\'\[\]]", '', word)
+                word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
                 word = re.sub(r"[\/]", ' ', word)
                 self.corpus.append(word)
 
@@ -75,7 +75,8 @@ class Chain():
     def generate(self, num_chars, fw=None):
         """Generate Markov Chain based on Model"""
         # Pick a random capitalized first word.
-        first_word = np.random.choice(self.corpus)
+        word = np.random.choice(list(self.model.keys()), 1)[0]
+        first_word = word.split(' ')[0]
 
         if fw != None:
             first_word = fw
@@ -83,7 +84,8 @@ class Chain():
             # 90% chance to pick another random word if chosen words key only has two or less values.
             while len(self.model[first_word].values()) <= 2 and randint(1, 100) > 10:
                 try:
-                    first_word = np.random.choice(list(self.model.keys()), 1)[0]
+                    word = np.random.choice(list(self.model.keys()), 1)[0]
+                    first_word = word.split(' ')[0]
                 except Exception as e:
                     pass # TODO: Handle this.
 
@@ -100,7 +102,7 @@ class Chain():
 
         if len(multi_keys) > 0:
             multi_key = np.random.choice(multi_keys, 1)[0]
-            word = ' '.join(multi_key.split(' ')[1:])
+            word = ''.join(multi_key.split(' ')[1])
             self.values.append(word)
 
 
