@@ -3,6 +3,7 @@
 
 import os
 import re
+import sys
 import numpy as np
 from random import randint
 
@@ -11,12 +12,15 @@ class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, model=None):
         self.corpus_path = corpus_path
-        self.blacklist = "blacklist.txt"
-        self.word_blacklist = "word_blacklist.txt"
+        self.word_blacklist = list()
+        if os.path.isfile("word_blacklist.txt"):
+            with open("word_blacklist.txt", encoding='utf8') as f:
+                word_blacklist = f.read().split("\n")
+
         self.corpus_pairs = None
         self.corpus_tripples = None
         self.corpus_quads = None
-        self.corpus = None    # Splitted words
+        self.corpus = list()    # Splitted words
         self.model = None
         self.values = None
 
@@ -24,47 +28,47 @@ class Chain():
 
     def build_model(self):
         """Build a new Model from Corpus"""
-        # Load corpus
-        txt = ""
-        blacklist = list() # Ignore blacklisted corpus files
-        if os.path.isfile(self.blacklist):
-            with open(self.blacklist, encoding='utf8') as f:
-                blacklist = f.read().split("\n")
-
         if os.path.isdir(self.corpus_path):
             for (dirpath, _, filenames) in os.walk(self.corpus_path):
                 for filename in filenames:
                     with open(os.path.join(dirpath, filename)) as f:
-                        txt += f.read()
+                        txt = f.read()
+
+                    # For each paragraph in the loaded file, filter the words
+                    # and add as lists in corpus.
+                    for paragraph in txt.split('\n'):
+                        self.corpus.append(self.filter_words(paragraph))
         else:
             with open(self.corpus_path, encoding='utf8') as f:
                 txt = f.read()
-
-        self.corpus = list()
-
-
-        word_blacklist = list() # Ignore word_blacklisted corpus files
-        if os.path.isfile(self.word_blacklist):
-            with open(self.word_blacklist, encoding='utf8') as f:
-                word_blacklist = f.read().split("\n")
-
-        punct_only_word = "^[\-\,\.\/?\!\\\/\;\:\"\(\)]+$"
-
-        for word in txt.split():
-            if word not in word_blacklist and re.match(punct_only_word, word) == None:
-                word = word.lower()
-                # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
-                word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
-                word = re.sub(r"[\/]", ' ', word)
-                self.corpus.append(word)
+                for paragraph in txt.split('\n'):
+                    self.corpus.append(self.filter_words(paragraph))
 
 
-        # Yield a generator objects from corpus
+        # Yield generator objects from corpus.
         self.corpus_pairs = self.make_pairs()
         self.corpus_tripples = self.make_tripples()
         self.corpus_quads = self.make_quads()
 
+
         self.model = self.instantiate_model()
+
+    def filter_words(self, text):
+        """Return list of accepted and filtered words from a string."""
+        paragraph_words = list()
+        punct_only_word = "^[\-\,\.\/?\!\\\/\;\:\"\(\)]+$"
+
+        for word in text.split():
+            if word not in self.word_blacklist and re.match(punct_only_word, word) == None:
+                word = word.lower()
+                # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
+                word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
+                word = re.sub(r"[\/]", ' ', word)
+
+                paragraph_words.append(word)
+
+        return paragraph_words
+
 
     def load_model(self, file):
         """Load a Model from File"""
@@ -127,7 +131,6 @@ class Chain():
             else:
                 self.values.append(value)
 
-
         # TODO: move grammar stuff out of chain.
 
         # Remove leading sentence whitespace, if present
@@ -187,18 +190,21 @@ class Chain():
 
     def make_pairs(self):
         """Yielding a generator object from corpus, with paired words"""
-        for i in range(len(self.corpus)-1):
-            yield (self.corpus[i], self.corpus[i+1])
+        for sub_list in self.corpus:
+            for i in range(len(sub_list)-1):
+                yield (sub_list[i], sub_list[i+1])
 
     def make_tripples(self):
         """Yielding a generator object from corpus, with three paired words"""
-        for i in range(len(self.corpus)-2):
-            yield (self.corpus[i], self.corpus[i+1], self.corpus[i+2])
+        for sub_list in self.corpus:
+            for i in range(len(sub_list)-2):
+                yield (sub_list[i], sub_list[i+1], sub_list[i+2])
 
     def make_quads(self):
         """Yielding a generator object from corpus, with four paired words"""
-        for i in range(len(self.corpus)-3):
-            yield (self.corpus[i], self.corpus[i+1], self.corpus[i+2], self.corpus[i+3])
+        for sub_list in self.corpus:
+            for i in range(len(sub_list)-3):
+                yield (sub_list[i], sub_list[i+1], sub_list[i+2], sub_list[i+3])
 
     def walk(self):
         """
