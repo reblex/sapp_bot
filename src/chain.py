@@ -17,9 +17,8 @@ class Chain():
             with open("word_blacklist.txt", encoding='utf8') as f:
                 word_blacklist = f.read().split("\n")
 
-        self.corpus_pairs = None
-        self.corpus_tripples = None
-        self.corpus_quads = None
+        self.NUM_GENERATORS = 3
+        self.generators = list()
         self.corpus = list()    # Splitted words
         self.model = None
         self.values = None
@@ -46,10 +45,8 @@ class Chain():
 
 
         # Yield generator objects from corpus.
-        self.corpus_pairs = self.make_pairs()
-        self.corpus_tripples = self.make_tripples()
-        self.corpus_quads = self.make_quads()
-
+        for i in range(self.NUM_GENERATORS):
+            self.generators.append(self.create_model_generator(i + 2))
 
         self.model = self.instantiate_model()
 
@@ -145,39 +142,8 @@ class Chain():
         """Build the model"""
         model = {}
 
-        # Fill dictionary with word pairs, appending to already existing keys.
-        for word_1, word_2 in self.corpus_pairs:
-            if word_1 in model.keys():
-                if word_2 in model[word_1].keys():
-                    model[word_1][word_2] += 1
-                else:
-                    model[word_1][word_2] = 1
-            else:
-                model[word_1] = {word_2: 1}
-
-        # Fill dictionary with word tripples, using two words as key.
-        for word_1, word_2, word_3 in self.corpus_tripples:
-            pair = word_1 + " " + word_2
-
-            if pair in model.keys():
-                if word_3 in model[pair].keys():
-                    model[pair][word_3] += 1
-                else:
-                    model[pair][word_3] = 1
-            else:
-                model[pair] = {word_3: 1}
-
-        # Fill dictionary with word quads, using three words as key.
-        for word_1, word_2, word_3, word_4 in self.corpus_quads:
-            pair = word_1 + " " + word_2 + " " + word_3
-
-            if pair in model.keys():
-                if word_4 in model[pair].keys():
-                    model[pair][word_4] += 1
-                else:
-                    model[pair][word_4] = 1
-            else:
-                model[pair] = {word_4: 1}
+        for generator in self.generators:
+            model = self.expand_model(model, generator)
 
         if save:
             if not os.path.exists("models"):
@@ -188,23 +154,34 @@ class Chain():
 
         return model
 
-    def make_pairs(self):
-        """Yielding a generator object from corpus, with paired words"""
-        for sub_list in self.corpus:
-            for i in range(len(sub_list)-1):
-                yield (sub_list[i], sub_list[i+1])
 
-    def make_tripples(self):
-        """Yielding a generator object from corpus, with three paired words"""
-        for sub_list in self.corpus:
-            for i in range(len(sub_list)-2):
-                yield (sub_list[i], sub_list[i+1], sub_list[i+2])
+    def expand_model(self, model, corpus_generator):
+        """Expand the markov model with multi or single keys."""
+        expanded_model = model
+        for string in corpus_generator:
+            multi = ' '.join(string)
+            key = ' '.join(multi.split(' ')[:-1])
+            value = multi.split(' ')[-1]
 
-    def make_quads(self):
-        """Yielding a generator object from corpus, with four paired words"""
+            # If the key exists, put value in that key, or just add to count if value exists.
+            # If key doesn't exist, append it.
+            if key in expanded_model.keys():
+                if value in expanded_model[key].keys():
+                    expanded_model[key][value] += 1
+                else:
+                    expanded_model[key][value] = 1
+            else:
+                expanded_model[key] = {value: 1}
+
+        return expanded_model
+
+
+    def create_model_generator(self, words_in_key):
+        """Yield a generator object from corpus with key-value single_key"""
         for sub_list in self.corpus:
-            for i in range(len(sub_list)-3):
-                yield (sub_list[i], sub_list[i+1], sub_list[i+2], sub_list[i+3])
+            for i in range(len(sub_list) - words_in_key):
+                yield [sub_list[i+x] for x in range(words_in_key)]
+
 
     def walk(self):
         """
