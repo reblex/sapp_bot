@@ -27,7 +27,7 @@ class WikiScraper():
         if os.path.isfile(self.blacklist_file):
             with open(self.blacklist_file, encoding='utf8') as f:
                 self.blacklist = f.read().split("\n")
-                
+
 
     def build_corpus(self):
         """Build corpus files"""
@@ -148,8 +148,7 @@ class WikiScraper():
             res = requests.get(url, headers={'User-Agent': 'knutte-bot'})
 
         except KeyboardInterrupt:
-            self.prompt_print("The program was manually interrupted, bye!")
-            self.log_message("Manual Shut Down.", "log/general.log");
+            base.prompt_print("The program was manually interrupted, bye!")
             sys.exit(0)
 
         except BaseException as e:

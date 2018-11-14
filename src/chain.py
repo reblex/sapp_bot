@@ -17,7 +17,7 @@ class Chain():
             with open("word_blacklist.txt", encoding='utf8') as f:
                 word_blacklist = f.read().split("\n")
 
-        self.NUM_GENERATORS = 3
+        self.NUM_GENERATORS = 6
         self.generators = list()
         self.corpus = list()    # Splitted words
         self.model = None
@@ -73,6 +73,22 @@ class Chain():
         # 2. instantiate_model()
         pass
 
+    def pick_multi_continue(self, first_word):
+        """Pick a random word that is part of multikey, beginning with first_word."""
+        multi_key_search = '^' + first_word + '\s(.+?(?:\s.+?)*)'
+        multi_keys = list()
+        word = None
+
+        for key in list(self.model.keys()):
+            if re.match(multi_key_search, key):
+                multi_keys.append(key)
+
+        if len(multi_keys) > 0:
+            multi_key = np.random.choice(multi_keys, 1)[0]
+            word = ''.join(multi_key.split(' ')[-1])
+
+        return word
+
     def generate(self, num_chars, fw=None):
         """Generate Markov Chain based on Model"""
         # Pick a random capitalized first word.
@@ -82,50 +98,66 @@ class Chain():
         if fw != None:
             first_word = fw
         else:
-            # 90% chance to pick another random word if chosen words key only has two or less values.
-            while len(self.model[first_word].values()) <= 2 and randint(1, 100) > 10:
+            # 90% chance to pick another random word if chosen words key only has one value.
+            while len(self.model[first_word].values()) == 1 and randint(1, 100) > 10:
                 try:
                     word = np.random.choice(list(self.model.keys()), 1)[0]
                     first_word = word.split(' ')[0]
                 except Exception as e:
+                    print("Error:", str(e))
                     pass # TODO: Handle this.
 
         self.values = [first_word]
 
-        # Pick a second word that is part of a multi-key, if possible.
-        multi_key_search = '^' + first_word + '\s(.+?(?:\s.+?)*)'
-        multi_keys = list()
-
-        for key in list(self.model.keys()):
-            if re.match(multi_key_search, key):
-                multi_keys.append(key)
-
-        if len(multi_keys) > 0:
-            multi_key = np.random.choice(multi_keys, 1)[0]
-            word = ''.join(multi_key.split(' ')[1])
-            self.values.append(word)
+        try:
+            self.values.append(self.pick_multi_continue(first_word))
+        except:
+            word = np.random.choice(list(self.model.keys()), 1)[0]
 
 
         # While there are characters left, keep chosing new words.
         character_capped = False
         while not character_capped:
-            # TODO: If there are too few words possible, maybe pick another
-            # random word.
             value = self.walk()
+
+            # Pick a random word if it is after punctuation.
+            if any(punct in self.values[-1] for punct in [".", "!", "?"]):
+                while len(self.model[value].values()) <= 2 and randint(1, 100) > 10:
+                    try:
+                        value = np.random.choice(list(self.model.keys()), 1)[0]
+                        first_word = value.split(' ')[0]
+                    except Exception as e:
+                        print("Error:", str(e))
+                        pass # TODO: Handle this.
+
+            # After punctuation and first word after, try to pick multi_key word.
+            if len(self.values) > 2:
+                if any(punct in self.values[-2] for punct in [".", "!", "?"]):
+                    value = self.pick_multi_continue(self.values[-1])
+
+            # TODO: fix this mess....
+            # # 40% chance to pick another random word if chosen words key only has one value.
+            # # TODO: crashes without try/catch if value is not in base of self.model..
+            # try:
+            #     if len(list(self.model[value].keys())) == 1 and randint(1, 100) > 60:
+            #         try:
+            #             print("trying")
+            #             value = np.random.choice(list(self.model.keys()), 1)[0]
+            #         except Exception as e:
+            #             print("Error:", str(e))
+            #             pass # TODO: Handle this.
+            # except Exception as e:
+            #     pass
+
+
+
             chars = len(' '.join(self.values) + " " + value)
             # print(chars)
-
-            # 60% chance to pick another random word if chosen words key only has one value.
-            if len(self.model[value].values()) == 1 and randint(1, 100) > 40:
-                try:
-                    value = np.random.choice(list(self.model.keys()), 1)[0]
-                except Exception as e:
-                    pass # TODO: Handle this.
 
             if chars > num_chars:
                 character_capped = True
             else:
-                self.values.append(value)
+                self.values.append(value.split()[-1])
 
         # TODO: move grammar stuff out of chain.
 
@@ -196,27 +228,38 @@ class Chain():
             if len(self.values) < self.NUM_GENERATORS:
                 continue
 
-            # Base 80% chance to pick multi-key, for now.
-            if randint(1, 100) > 20:
-                multi = ' '.join(self.values)
-                # print(i, multi)
-                start_key_pos = len(self.values) - i
-                key = ' '.join(multi.split(' ')[start_key_pos:])
+            # Base 90% chance to pick multi-key, for now.
+            if randint(1, 100) > 10:
+                multi = ' '.join(self.values[-i:])
 
-                if key in self.model:
-                    if len(self.model[tripple_word].keys()) > 3:
+                if multi in self.model:
+                    # print("key<", multi, "> is in model.")
+                    if len(list(self.model[multi].keys())) > 3:
+                        # print("90%")
                         chance = 90
-                    elif len(self.model[tripple_word].keys()) > 1:
+                    elif len(list(self.model[multi].keys())) > 1:
+                        # print("85%")
                         chance = 85
+                    elif len(list(self.model[multi].keys())) == 1 and list(self.model[multi].keys())[0] == self.values[-1]:
+                        # print("0%")
+                        chance = 0
                     else:
-                        chance = 25
+                        # print("35%")
+                        chance = 35
 
                     cmp_val = 100 - chance
                     if randint(1, 100) > cmp_val:
-                        key_to_check = key
+                        key_to_check = multi
+                        # print("multi:", key_to_check)
                         break
 
-        chain = self.model[key_to_check]
+        # TODO: Better handling of keys not being in base of model
+        try:
+            chain = self.model[key_to_check]
+        except:
+            # Just return a completely random key if key_to_check is not in base of model.
+            return np.random.choice(list(self.model.keys()))
+
         keys = list(chain.keys())
 
         # Calculate the normalizer, using: (1 / (sum of values))
@@ -231,7 +274,7 @@ class Chain():
         if self.values[-1].isdigit() and len(self.model[step]) > 1:
             while step.isdigit():
                 # Small chance to just pick a random (non digit) word instead.
-                if passrandint(1, 100) > 99:
+                if randint(1, 100) > 99:
                     step = np.random.choice(list(self.model.keys()), 1)[0]
                 else:
                     step = np.random.choice(keys, 1, p=probabilities)[0]

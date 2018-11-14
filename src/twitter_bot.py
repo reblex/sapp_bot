@@ -32,7 +32,7 @@ class TwitterBot():
             try:
                 schedule.run_pending()
             except Exception as e:
-                base.prompt_print(str(e))
+                base.prompt_print("Error:", str(e))
 
             try:
                 time.sleep(1)
@@ -49,7 +49,7 @@ class TwitterBot():
         chain.build_model()
 
         # Instantiate and generate a sentence.
-        sentence = Sentence(chain, randint(120, 260))
+        sentence = Sentence(chain, randint(180, 260))
         sentence.generate()
 
         # Get twitter authentication.

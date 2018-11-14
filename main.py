@@ -54,11 +54,11 @@ def main():
 
         for _ in range(int(count)):
             try:
-                sentence = Sentence(chain, randint(120, 260))
+                sentence = Sentence(chain, randint(180, 260))
                 sentence.generate()
                 print(str(sentence) + "\n")
             except Exception as e:
-                print(str(e))
+                print("Error:", str(e))
 
     elif args[0] == 'update':
         opts = args[1:]

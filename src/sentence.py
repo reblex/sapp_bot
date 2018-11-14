@@ -12,7 +12,7 @@ class Sentence():
         self.words = None
         self.string = ""
         self.max_characters = max_characters
-        self.MAX_WORD_OCCURRENCE = 2
+        self.MAX_WORD_OCCURRENCE = 6    # TODO: should be per sentenec, not whole thing.
         if filters != None:
             self.filters = filters  # Applied in order listed.
         else:
@@ -34,10 +34,11 @@ class Sentence():
             try:
                 self.chain.generate(self.max_characters)
             except Exception as e:
-                continue
+                print("Error", str(e))
 
             too_many_word_occurences = False
 
+            # print(' '.join(self.chain.values))
             for word in self.chain.values:
                 count_occurrences = self.chain.values.count(word)
                 if count_occurrences > self.MAX_WORD_OCCURRENCE:
