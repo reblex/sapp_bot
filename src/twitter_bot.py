@@ -33,7 +33,7 @@ class TwitterBot():
             try:
                 schedule.run_pending()
             except Exception as e:
-                base.prompt_print("Error:", str(e))
+                base.prompt_print("Error: " + str(e))
 
             try:
                 time.sleep(1)
@@ -46,12 +46,25 @@ class TwitterBot():
         """Post a generated sentence to Twitter."""
         # Instantiate and generate the Markov chain.
         base.prompt_print("Posting to Twitter...")
-        chain = Chain("corpus")
-        chain.build_model()
+        completed = False
+        while not completed:
+            try:
+                chain = Chain("corpus")
+                chain.build_model()
+                completed = True
+            except:
+                raise
+
 
         # Instantiate and generate a sentence.
-        sentence = Sentence(chain, randint(180, 260))
-        sentence.generate()
+        completed = False
+        while not completed:
+            try:
+                sentence = Sentence(chain, randint(180, 260))
+                sentence.generate()
+                completed = True
+            except:
+                raise
 
         # Get twitter authentication.
         APP_KEY = self.config['twitter_auth_key']
@@ -60,8 +73,14 @@ class TwitterBot():
         OAUTH_TOKEN_SECRET = self.config['twitter_oauth_token_secret']
 
         # Instantiate Twython object and post to Twitter.
-        twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-        twitter.update_status(status=str(sentence))
+        completed = False
+        while not completed:
+            try:
+                twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+                twitter.update_status(status=str(sentence))
+                completed = True
+            except:
+                raise
 
         base.prompt_print("Succesfully posted to Twitter!")
 
@@ -70,11 +89,23 @@ class TwitterBot():
         """Update Minervawiki-corpus"""
         ws = WikiScraper()
         if all_pages:
-            base.prompt_print("Updating corpus from all pages...")
-            ws.update_all_pages()
+            completed = False
+            while not completed:
+                try:
+                    base.prompt_print("Updating corpus from all pages...")
+                    ws.update_all_pages()
+                    completed = True
+                except:
+                    raise
         else:
-            base.prompt_print("Updating corpus from latest edits...")
-            ws.update_recent_changes()
+            completed = False
+            while not completed:
+                try:
+                    base.prompt_print("Updating corpus from latest edits...")
+                    ws.update_recent_changes()
+                    completed = True
+                except:
+                    raise
 
         base.prompt_print("Finished updating corpus!")
 
