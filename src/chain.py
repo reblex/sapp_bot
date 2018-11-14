@@ -10,9 +10,10 @@ from random import randint
 
 class Chain():
     """Markov Chain Generator"""
-    def __init__(self, corpus_path, model=None):
+    def __init__(self, corpus_path, debug=False):
         self.corpus_path = corpus_path
         self.NUM_GENERATORS = 10
+        self.DEBUG = debug
         self.generators = list()
         self.corpus = list()    # Splitted words
         self.model = None
@@ -48,7 +49,7 @@ class Chain():
     def filter_words(self, text):
         """Return list of accepted and filtered words from a string."""
         paragraph_words = list()
-        punct_only_word = "^[\-\,\.\/?\!\\\/\;\:\"\(\)]+$"
+        punct_only_word = "^[\~\-\,\.\/?\!\\\/\;\:\"\(\)]+$"
 
         for word in text.split():
             if re.match(punct_only_word, word) is None:
@@ -102,13 +103,17 @@ class Chain():
                     print("Error:", str(e))
                     pass # TODO: Handle this.
 
+        if self.DEBUG:
+            print("First word:", first_word)
+
         self.values = [first_word]
         second_word = None
 
         try:
             second_word = self.pick_multi_continue(first_word)
             self.values.append(second_word)
-            # print("second")
+            if self.DEBUG:
+                print("Second word:", second_word)
         except:
             pass
 
@@ -117,7 +122,8 @@ class Chain():
                 third_word = self.pick_multi_continue(first_word + " " + second_word)
                 if third_word is not None:
                     self.values.append(third_word)
-                    # print("third")
+                    if self.DEBUG:
+                        print("Third word:", third_word)
             except:
                 pass
 
@@ -168,8 +174,9 @@ class Chain():
                 self.values.append(value.split()[-1])
 
             # Try to end sentence on an already punctuated word.
-            if chars > max_chars - 60 and any(punct in self.values[-1] for punct in [".", "!", "?"]):
-                # print("Ending on punctuated word:", self.values[-1])
+            if chars > max_chars - 70 and any(punct in self.values[-1] for punct in [".", "!", "?"]):
+                if self.DEBUG:
+                    print("Ending on punctuated word:", self.values[-1])
                 character_capped = True
 
 
@@ -277,16 +284,17 @@ class Chain():
                     if randint(1, 100) > cmp_val:
                         key_to_check = multi
                         multi_picked = True
-                        # print("Picking from multi-key(" + str(i) + "):", key_to_check, "> ", end="")
+                        if self.DEBUG:
+                            print("Picking from multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
 
-            elif not denying_multi and randint(1, 100) > 50:
+            elif not denying_multi and randint(1, 100) > 70:
                 denying_multi = True
                 denied_multi = ' '.join(multi.split()[1:])
-                # print("fuck ->", denied_multi)
+                if self.DEBUG:
+                    print("Denying multi with:", denied_multi)
             else:
                 denied_multi = ' '.join(multi.split()[1:])
-                # print("fuck ->", denied_multi)
 
 
         # TODO: Better handling of keys not being in base of model
@@ -315,9 +323,10 @@ class Chain():
                 else:
                     step = np.random.choice(keys, 1, p=probabilities)[0]
 
-        # if not multi_picked:
-        #     print("Picking single-key:", step)
-        # else:
-        #     print(step)
+        if self.DEBUG:
+            if not multi_picked:
+                print("Picking single-key:", step)
+            else:
+                print(step)
 
         return step

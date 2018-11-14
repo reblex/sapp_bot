@@ -13,6 +13,7 @@ from src.wiki_scraper import WikiScraper
 from src.sentence import Sentence
 import src.base as base
 
+# TODO: Read "Desired Subject" from file and set first_word in chain.
 
 class TwitterBot():
     """Bot for posting on Twitter"""
