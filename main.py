@@ -54,7 +54,7 @@ def main():
 
         for _ in range(int(count)):
             try:
-                sentence = Sentence(chain, randint(180, 260))
+                sentence = Sentence(chain, randint(200, 270))
                 sentence.generate()
                 print(str(sentence) + "\n")
             except Exception as e:

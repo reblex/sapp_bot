@@ -12,7 +12,7 @@ class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, model=None):
         self.corpus_path = corpus_path
-        self.NUM_GENERATORS = 6
+        self.NUM_GENERATORS = 10
         self.generators = list()
         self.corpus = list()    # Splitted words
         self.model = None
@@ -84,7 +84,7 @@ class Chain():
 
         return word
 
-    def generate(self, num_chars, fw=None):
+    def generate(self, max_chars, fw=None):
         """Generate Markov Chain based on Model"""
         # Pick a random capitalized first word.
         word = np.random.choice(list(self.model.keys()), 1)[0]
@@ -93,8 +93,8 @@ class Chain():
         if fw != None:
             first_word = fw
         else:
-            # 90% chance to pick another random word if chosen words key only has one value.
-            while len(self.model[first_word].values()) == 1 and randint(1, 100) > 10:
+            # 90% chance to pick another random word if chosen words key only has 3 or less values.
+            while len(self.model[first_word].values()) <= 3 and randint(1, 100) > 10:
                 try:
                     word = np.random.choice(list(self.model.keys()), 1)[0]
                     first_word = word.split(' ')[0]
@@ -103,11 +103,24 @@ class Chain():
                     pass # TODO: Handle this.
 
         self.values = [first_word]
+        second_word = None
 
         try:
-            self.values.append(self.pick_multi_continue(first_word))
+            second_word = self.pick_multi_continue(first_word)
+            self.values.append(second_word)
+            # print("second")
         except:
-            word = np.random.choice(list(self.model.keys()), 1)[0]
+            pass
+
+        if second_word is not None:
+            try:
+                third_word = self.pick_multi_continue(first_word + " " + second_word)
+                if third_word is not None:
+                    self.values.append(third_word)
+                    # print("third")
+            except:
+                pass
+
 
 
         # While there are characters left, keep chosing new words.
@@ -149,10 +162,16 @@ class Chain():
             chars = len(' '.join(self.values) + " " + value)
             # print(chars)
 
-            if chars > num_chars:
+            if chars > max_chars:
                 character_capped = True
             else:
                 self.values.append(value.split()[-1])
+
+            # Try to end sentence on an already punctuated word.
+            if chars > max_chars - 60 and any(punct in self.values[-1] for punct in [".", "!", "?"]):
+                # print("Ending on punctuated word:", self.values[-1])
+                character_capped = True
+
 
         # TODO: move grammar stuff out of chain.
 
@@ -218,10 +237,12 @@ class Chain():
         key_to_check = self.values[-1] # If no multikey is chosen, just use last word.
         multi_picked = False
         chance = None
+        denied_multi = ''
+        denying_multi = False
 
         for i in range(self.NUM_GENERATORS, 1, -1):
             # If there are too few words to check for 'i' number of keys, skip.
-            if len(self.values) < self.NUM_GENERATORS:
+            if len(self.values) < i:
                 continue
 
             # 90% base chance to pick multi-key.
@@ -235,9 +256,8 @@ class Chain():
                 chance = 60
 
             cmp_val = 100 - chance
-            if randint(1, 100) > cmp_val:
-                multi = ' '.join(self.values[-i:])
-
+            multi = ' '.join(self.values[-i:])
+            if randint(1, 100) > cmp_val and (multi != denied_multi or not denying_multi):
                 if multi in self.model:
                     # print("key<", multi, "> is in model.")
                     if len(list(self.model[multi].keys())) > 3:
@@ -256,8 +276,18 @@ class Chain():
                     cmp_val = 100 - chance
                     if randint(1, 100) > cmp_val:
                         key_to_check = multi
-                        # print("multi:", key_to_check)
+                        multi_picked = True
+                        # print("Picking from multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
+
+            elif not denying_multi and randint(1, 100) > 50:
+                denying_multi = True
+                denied_multi = ' '.join(multi.split()[1:])
+                # print("fuck ->", denied_multi)
+            else:
+                denied_multi = ' '.join(multi.split()[1:])
+                # print("fuck ->", denied_multi)
+
 
         # TODO: Better handling of keys not being in base of model
         try:
@@ -285,6 +315,9 @@ class Chain():
                 else:
                     step = np.random.choice(keys, 1, p=probabilities)[0]
 
-        # print("word selected:", step)
+        # if not multi_picked:
+        #     print("Picking single-key:", step)
+        # else:
+        #     print(step)
 
         return step
