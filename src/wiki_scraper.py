@@ -22,7 +22,10 @@ class WikiScraper():
         self.blacklist = list()
         self.corpus_folder = "corpus"
         self.corpus_path = "corpus"
-
+        self.word_blacklist = list()
+        if os.path.isfile("word_blacklist.txt"):
+            with open("word_blacklist.txt", encoding='utf8') as f:
+                self.word_blacklist = f.read().split("\n")
 
         if os.path.isfile(self.blacklist_file):
             with open(self.blacklist_file, encoding='utf8') as f:
@@ -64,6 +67,10 @@ class WikiScraper():
 
             # Remove multiple whitespace?
             content = re.sub(r'\s{2,}', ' ', content).strip()
+
+            # Remove blacklisted words
+            for word in self.word_blacklist:
+                content = re.sub(word, '', content)
 
             # Fix "&" tokens
             content = re.sub('&amp;', '&', content)

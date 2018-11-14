@@ -12,11 +12,6 @@ class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, model=None):
         self.corpus_path = corpus_path
-        self.word_blacklist = list()
-        if os.path.isfile("word_blacklist.txt"):
-            with open("word_blacklist.txt", encoding='utf8') as f:
-                word_blacklist = f.read().split("\n")
-
         self.NUM_GENERATORS = 6
         self.generators = list()
         self.corpus = list()    # Splitted words
@@ -56,7 +51,7 @@ class Chain():
         punct_only_word = "^[\-\,\.\/?\!\\\/\;\:\"\(\)]+$"
 
         for word in text.split():
-            if word not in self.word_blacklist and re.match(punct_only_word, word) == None:
+            if re.match(punct_only_word, word) is None:
                 word = word.lower()
                 # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
                 word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
