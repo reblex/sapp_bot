@@ -216,6 +216,7 @@ class Chain():
         Then a random key is selected at random, based on probability.
         """
         key_to_check = self.values[-1] # If no multikey is chosen, just use last word.
+        multi_picked = False
         chance = None
 
         for i in range(self.NUM_GENERATORS, 1, -1):
@@ -223,8 +224,18 @@ class Chain():
             if len(self.values) < self.NUM_GENERATORS:
                 continue
 
-            # Base 90% chance to pick multi-key, for now.
-            if randint(1, 100) > 10:
+            # 90% base chance to pick multi-key.
+            base_chance = 90
+
+            # Lower chance to pick higher complexity keys.
+            chance = round(base_chance - (i * 3))
+
+            # Minimum chance of 60%
+            if chance < 60:
+                chance = 60
+
+            cmp_val = 100 - chance
+            if randint(1, 100) > cmp_val:
                 multi = ' '.join(self.values[-i:])
 
                 if multi in self.model:
@@ -239,8 +250,8 @@ class Chain():
                         # print("0%")
                         chance = 0
                     else:
-                        # print("35%")
-                        chance = 35
+                        # print("45%")
+                        chance = 45
 
                     cmp_val = 100 - chance
                     if randint(1, 100) > cmp_val:
