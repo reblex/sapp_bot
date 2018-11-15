@@ -262,9 +262,8 @@ class Chain():
             if chance < 60:
                 chance = 60
 
-            cmp_val = 100 - chance
             multi = ' '.join(self.values[-i:])
-            if randint(1, 100) > cmp_val and (multi != denied_multi or not denying_multi):
+            if randint(1, 100) < chance and (multi != denied_multi or not denying_multi):
                 if multi in self.model:
                     # print("key<", multi, "> is in model.")
                     if len(list(self.model[multi].keys())) > 3:
@@ -280,15 +279,14 @@ class Chain():
                         # print("45%")
                         chance = 45
 
-                    cmp_val = 100 - chance
-                    if randint(1, 100) > cmp_val:
+                    if randint(1, 100) < chance:
                         key_to_check = multi
                         multi_picked = True
                         if self.DEBUG:
                             print("Picking from multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
 
-            elif not denying_multi and randint(1, 100) > 70:
+            elif not denying_multi and randint(1, 100) > 75:
                 denying_multi = True
                 denied_multi = ' '.join(multi.split()[1:])
                 if self.DEBUG:
