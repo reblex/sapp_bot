@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """ Twitter Bot """
 
-from twython import Twython
 from random import randint
-import schedule
 import time
 import json
 import sys
+import schedule
+from twython import Twython
 
 from src.chain import Chain
 from src.wiki_scraper import WikiScraper
@@ -32,8 +32,8 @@ class TwitterBot():
         while True:
             try:
                 schedule.run_pending()
-            except Exception as e:
-                base.prompt_print("Error: " + str(e))
+            except BaseException as exception:
+                base.prompt_print("Error: " + str(exception))
 
             try:
                 time.sleep(1)
@@ -112,5 +112,5 @@ class TwitterBot():
 
     def _configure(self):
         """Read configurations from file"""
-        with open(self.config_file) as f:
-            self.config = json.load(f)
+        with open(self.config_file) as file:
+            self.config = json.load(file)

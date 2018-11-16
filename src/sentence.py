@@ -12,8 +12,8 @@ class Sentence():
         self.words = None
         self.string = ""
         self.max_characters = max_characters
-        self.MAX_WORD_OCCURRENCE = 6    # TODO: should be per sentenec, not whole thing.
-        if filters != None:
+        self.max_word_occurrence = 6    # TODO: should be per sentence, not whole chain. (split on ".!?")
+        if filters is not None:
             self.filters = filters  # Applied in order listed.
         else:
             # Alwas in this order!
@@ -23,8 +23,8 @@ class Sentence():
                             "punctuation_capitalization",
                             "random_trailing_punctuation"]
 
-        with open('conjunctions.txt', 'r') as f:
-            self.CONJUNCTIONS = f.read().split("\n")
+        with open('conjunctions.txt', 'r') as file:
+            self.conjunctions = file.read().split("\n")
 
 
     def generate(self):
@@ -32,16 +32,17 @@ class Sentence():
         too_many_word_occurences = True
         while too_many_word_occurences:
             try:
+                # print("Generating a tweet of max", self.max_characters, "characters...")
                 self.chain.generate(self.max_characters)
-            except Exception as e:
-                print("Error", str(e))
+            except BaseException as exception:
+                print("Error", str(exception))
 
             too_many_word_occurences = False
 
             # print(' '.join(self.chain.values))
             for word in self.chain.values:
                 count_occurrences = self.chain.values.count(word)
-                if count_occurrences > self.MAX_WORD_OCCURRENCE:
+                if count_occurrences > self.max_word_occurrence:
                     too_many_word_occurences = True
                     break
 
@@ -64,17 +65,17 @@ class Sentence():
         }
 
         # Call functions based on filter name.
-        for filter in self.filters:
-            filter_functions[filter]()
+        for current_filter in self.filters:
+            filter_functions[current_filter]()
 
 
     def _trailing_conjunction(self):
         """Remove conjunction if present at end of sentence."""
-        last_word =  re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', self.words[-1])
-        b = last_word in self.CONJUNCTIONS
-        while last_word in self.CONJUNCTIONS:
+        last_word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', self.words[-1])
+        b = last_word in self.conjunctions
+        while last_word in self.conjunctions:
             del self.words[-1]
-            last_word =  re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', self.words[-1])
+            last_word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', self.words[-1])
 
         self.string = ' '.join(self.words)
 

@@ -6,9 +6,9 @@ import json
 import os
 import re
 import time
+from datetime import datetime, timedelta
 import requests
 import progressbar
-from datetime import datetime, timedelta
 
 import src.base as base
 
@@ -24,12 +24,12 @@ class WikiScraper():
         self.corpus_path = "corpus"
         self.word_blacklist = list()
         if os.path.isfile("word_blacklist.txt"):
-            with open("word_blacklist.txt", encoding='utf8') as f:
-                self.word_blacklist = f.read().split("\n")
+            with open("word_blacklist.txt", encoding='utf8') as file:
+                self.word_blacklist = file.read().split("\n")
 
         if os.path.isfile(self.blacklist_file):
-            with open(self.blacklist_file, encoding='utf8') as f:
-                self.blacklist = f.read().split("\n")
+            with open(self.blacklist_file, encoding='utf8') as file:
+                self.blacklist = file.read().split("\n")
 
 
     def build_corpus(self):
@@ -37,13 +37,13 @@ class WikiScraper():
         # TODO: Find out why some words have  spaces in them (start of sentence)
         i = 0
 
-        bar = progressbar.ProgressBar(maxval=len(self.pages), term_width=50, \
+        p_bar = progressbar.ProgressBar(maxval=len(self.pages), term_width=50, \
         widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
-        bar.start()
+        p_bar.start()
         for page_title in self.pages:
             url = self.base_url + "/wiki/" + page_title
             res = self.get_url(url)
-            bar.update(i+1)
+            p_bar.update(i+1)
 
             regex = r"<p>(.*?)<\/p>"
 
@@ -90,7 +90,7 @@ class WikiScraper():
                 time.sleep(0.8)
             i += 1
 
-        bar.finish()
+        p_bar.finish()
 
     def update_all_pages(self):
         """Get list of pages available on the wiki"""
@@ -99,7 +99,9 @@ class WikiScraper():
         continue_param = ""
 
         while not end_of_categories:
-            url = self.base_url + "/api.php?action=query&list=allpages&aplimit=500&format=json" + continue_param
+            url = self.base_url
+            url += "/api.php?action=query&list=allpages&aplimit=500&format=json"
+            url += continue_param
             res = self.get_url(url)
             # TODO: Check for None result.
 
@@ -123,7 +125,10 @@ class WikiScraper():
         continue_param = ""
 
         while not end_of_updates:
-            url = self.base_url + "/api.php?action=query&list=recentchanges&rcprop=title|timestamp&rclimit=50&format=json" + continue_param
+            url = self.base_url
+            url += "/api.php?action=query&list=recentchanges&rcprop=title"
+            url += "|timestamp&rclimit=50&format=json"
+            url += continue_param
             res = self.get_url(url)
             # TODO: Check for None result.
             json_data = res.json()
@@ -147,7 +152,8 @@ class WikiScraper():
 
         self.build_corpus()
 
-    def get_url(self, url):
+    @staticmethod
+    def get_url(url):
         """General GET request"""
         res = None
 
@@ -158,8 +164,8 @@ class WikiScraper():
             base.prompt_print("The program was manually interrupted, bye!")
             sys.exit(0)
 
-        except BaseException as e:
-            message = "Exception in get_html: " + str(e)
+        except BaseException as exception:
+            message = "Exception in get_html: " + str(exception)
             base.prompt_print(message)
 
         if res is not None:

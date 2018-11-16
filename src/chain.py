@@ -3,17 +3,16 @@
 
 import os
 import re
-import sys
-import numpy as np
 from random import randint
+import numpy as np
 
 
 class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, debug=False):
         self.corpus_path = corpus_path
-        self.COMPLEXITY = 10
-        self.DEBUG = debug
+        self.complexity = 3
+        self.debug = debug
         self.generators = list()
         self.corpus = list()    # Splitted words
         self.model = None
@@ -41,7 +40,7 @@ class Chain():
 
 
         # Yield generator objects from corpus.
-        for i in range(self.COMPLEXITY):
+        for i in range(self.complexity):
             self.generators.append(self.create_model_generator(i + 2))
 
         self.model = self.instantiate_model()
@@ -103,7 +102,7 @@ class Chain():
                     print("Error:", str(e))
                     pass # TODO: Handle this.
 
-        if self.DEBUG:
+        if self.debug:
             print("First word:", first_word)
 
         self.values = [first_word]
@@ -112,21 +111,20 @@ class Chain():
         try:
             second_word = self.pick_multi_continue(first_word)
             self.values.append(second_word)
-            if self.DEBUG:
+            if self.debug:
                 print("Second word:", second_word)
-        except:
-            pass
+        except BaseException as exception:
+            print(str(exception))
 
         if second_word is not None:
             try:
                 third_word = self.pick_multi_continue(first_word + " " + second_word)
                 if third_word is not None:
                     self.values.append(third_word)
-                    if self.DEBUG:
+                    if self.debug:
                         print("Third word:", third_word)
-            except:
-                pass
-
+            except BaseException as exception:
+                print(str(exception))
 
 
         # While there are characters left, keep chosing new words.
@@ -140,9 +138,9 @@ class Chain():
                     try:
                         value = np.random.choice(list(self.model.keys()), 1)[0]
                         first_word = value.split(' ')[0]
-                    except Exception as e:
-                        print("Error:", str(e))
-                        pass # TODO: Handle this.
+                    except BaseException as exception:
+                        print("Error:", str(exception))
+                        # TODO: Handle this better
 
             # After punctuation and first word after, try to pick multi_key word.
             if len(self.values) > 2:
@@ -175,7 +173,7 @@ class Chain():
 
             # Try to end sentence on an already punctuated word.
             if chars > max_chars - 70 and any(punct in self.values[-1] for punct in [".", "!", "?"]):
-                if self.DEBUG:
+                if self.debug:
                     print("Ending on punctuated word:", self.values[-1])
                 character_capped = True
 
@@ -206,8 +204,8 @@ class Chain():
 
         return model
 
-
-    def expand_model(self, model, corpus_generator):
+    @staticmethod
+    def expand_model(model, corpus_generator):
         """Expand the markov model with multi or single keys."""
         expanded_model = model
         for string in corpus_generator:
@@ -247,7 +245,7 @@ class Chain():
         denied_multi = ''
         denying_multi = False
 
-        for i in range(self.COMPLEXITY, 1, -1):
+        for i in range(self.complexity, 1, -1):
             # If there are too few words to check for 'i' number of keys, skip.
             if len(self.values) < i:
                 continue
@@ -282,14 +280,14 @@ class Chain():
                     if randint(1, 100) < chance:
                         key_to_check = multi
                         multi_picked = True
-                        if self.DEBUG:
+                        if self.debug:
                             print("Picking multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
 
             elif not denying_multi and randint(1, 100) > 75:
                 denying_multi = True
                 denied_multi = ' '.join(multi.split()[1:])
-                if self.DEBUG:
+                if self.debug:
                     print("Denying multi with:", denied_multi)
             else:
                 denied_multi = ' '.join(multi.split()[1:])
@@ -321,7 +319,7 @@ class Chain():
                 else:
                     step = np.random.choice(keys, 1, p=probabilities)[0]
 
-        if self.DEBUG:
+        if self.debug:
             if not multi_picked:
                 print("Picking single-key:", step)
             else:
