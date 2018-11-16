@@ -12,7 +12,7 @@ class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, debug=False):
         self.corpus_path = corpus_path
-        self.NUM_GENERATORS = 10
+        self.COMPLEXITY = 10
         self.DEBUG = debug
         self.generators = list()
         self.corpus = list()    # Splitted words
@@ -41,7 +41,7 @@ class Chain():
 
 
         # Yield generator objects from corpus.
-        for i in range(self.NUM_GENERATORS):
+        for i in range(self.COMPLEXITY):
             self.generators.append(self.create_model_generator(i + 2))
 
         self.model = self.instantiate_model()
@@ -247,7 +247,7 @@ class Chain():
         denied_multi = ''
         denying_multi = False
 
-        for i in range(self.NUM_GENERATORS, 1, -1):
+        for i in range(self.COMPLEXITY, 1, -1):
             # If there are too few words to check for 'i' number of keys, skip.
             if len(self.values) < i:
                 continue
@@ -283,7 +283,7 @@ class Chain():
                         key_to_check = multi
                         multi_picked = True
                         if self.DEBUG:
-                            print("Picking from multi-key(" + str(i) + "):", key_to_check, "> ", end="")
+                            print("Picking multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
 
             elif not denying_multi and randint(1, 100) > 75:
