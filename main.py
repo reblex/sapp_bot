@@ -81,7 +81,10 @@ def main():
 
         for _ in range(int(count)):
             try:
-                sentence = Sentence(chain, randint(230, 270))
+                max_chars = randint(230, 270)
+                if program_flags['--debug']:
+                    print("Generating tweet of", max_chars, "characters...")
+                sentence = Sentence(chain, max_chars)
                 sentence.generate()
                 print(str(sentence), end='')
                 if program_flags['--debug']:
