@@ -4,3 +4,4 @@ __pycache__
 blacklist.txt
 word_blacklist.txt
 bot_config.json
+dev.txt
