@@ -11,7 +11,7 @@ class Chain():
     """Markov Chain Generator"""
     def __init__(self, corpus_path, debug=False):
         self.corpus_path = corpus_path
-        self.complexity = 3
+        self.complexity = 10
         self.debug = debug
         self.generators = list()
         self.corpus = list()    # Splitted words
@@ -90,8 +90,9 @@ class Chain():
         word = np.random.choice(list(self.model.keys()), 1)[0]
         first_word = word.split(' ')[0]
 
-        if fw != None:
+        if fw != None and fw.lower() in self.model.keys():
             first_word = fw
+
         else:
             # 90% chance to pick another random word if chosen words key only has 3 or less values.
             while len(self.model[first_word].values()) <= 3 and randint(1, 100) > 10:
@@ -144,7 +145,7 @@ class Chain():
 
             # After punctuation and first word after, try to pick multi_key word.
             if len(self.values) > 2:
-                if any(punct in self.values[-2] for punct in [".", "!", "?"]):
+                if any(punct in self.values[-2][-1] for punct in [".", "!", "?"]):
                     value = self.pick_multi_continue(self.values[-1])
 
             # TODO: fix this mess....
@@ -284,7 +285,7 @@ class Chain():
                             print("Picking multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
 
-            elif not denying_multi and randint(1, 100) > 75:
+            elif not denying_multi and randint(1, 100) > 85:
                 denying_multi = True
                 denied_multi = ' '.join(multi.split()[1:])
                 if self.debug:

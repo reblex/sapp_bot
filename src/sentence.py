@@ -27,13 +27,13 @@ class Sentence():
             self.conjunctions = file.read().split("\n")
 
 
-    def generate(self):
+    def generate(self, first_word=None):
         """Generate senctances until one is deemed worthy.."""
         too_many_word_occurences = True
         while too_many_word_occurences:
             try:
                 # print("Generating a tweet of max", self.max_characters, "characters...")
-                self.chain.generate(self.max_characters)
+                self.chain.generate(self.max_characters, first_word)
             except BaseException as exception:
                 print("Error", str(exception))
 
