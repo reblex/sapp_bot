@@ -54,7 +54,8 @@ class Chain():
             if re.match(punct_only_word, word) is None:
                 word = word.lower()
                 # word = re.sub(r"[\-\,\.\?\!\(\)\"\“\”\:\'\[\]]", '', word)
-                word = re.sub(r"[\-\(\)\"\“\”\:\;\'\[\]]", '', word)
+                word = re.sub(r"[\(\)\"\“\”\:\;\'\[\]]", '', word)
+                word = re.sub(r"[\-]([\w\d]+?)[\-]", r'\0', word)
                 word = re.sub(r"[\/]", ' ', word)
 
                 paragraph_words.append(word)
@@ -89,6 +90,7 @@ class Chain():
         # Pick a random capitalized first word.
         word = np.random.choice(list(self.model.keys()), 1)[0]
         first_word = word.split(' ')[0]
+
         if fw is None:
             first = ""
         else:
@@ -97,7 +99,7 @@ class Chain():
         if first != "" and first.lower() in self.model.keys():
             first_word = first
 
-        elif os.path.isfile("saved_users.txt"):
+        elif os.path.isfile("saved_users.txt") and randint(1, 100) > 50:
             users = list()
 
             with open('saved_users.txt', 'r') as file:
@@ -286,13 +288,13 @@ class Chain():
                         chance = 90
                     elif len(list(self.model[multi].keys())) > 1:
                         # print("85%")
-                        chance = 85
+                        chance = 80
                     elif len(list(self.model[multi].keys())) == 1 and list(self.model[multi].keys())[0] == self.values[-1]:
                         # print("0%")
                         chance = 0
                     else:
                         # print("45%")
-                        chance = 45
+                        chance = 30
 
                     if randint(1, 100) < chance:
                         key_to_check = multi
@@ -301,7 +303,7 @@ class Chain():
                             print("Picking multi-key(" + str(i) + "):", key_to_check, "> ", end="")
                         break
 
-            elif not denying_multi and randint(1, 100) > 85:
+            elif not denying_multi and randint(1, 100) > 78:
                 denying_multi = True
                 denied_multi = ' '.join(multi.split()[1:])
                 if self.debug:
