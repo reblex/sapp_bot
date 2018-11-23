@@ -89,9 +89,25 @@ class Chain():
         # Pick a random capitalized first word.
         word = np.random.choice(list(self.model.keys()), 1)[0]
         first_word = word.split(' ')[0]
+        if fw is None:
+            first = ""
+        else:
+            first = fw
 
-        if fw != None and fw.lower() in self.model.keys():
-            first_word = fw
+        if first != "" and first.lower() in self.model.keys():
+            first_word = first
+
+        elif os.path.isfile("saved_users.txt"):
+            users = list()
+
+            with open('saved_users.txt', 'r') as file:
+                users = file.read().split("\n")
+
+            if len(users) > 0:
+                while first == "" or first.lower() not in self.model.keys():
+                    first = np.random.choice(users, 1)[0]
+
+                first_word = first
 
         else:
             # 90% chance to pick another random word if chosen words key only has 3 or less values.

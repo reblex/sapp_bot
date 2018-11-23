@@ -167,7 +167,7 @@ class WikiScraper():
         for user in json_data["query"]["allusers"]:
             # Skip blacklisted pages
             if user["name"] not in saved_users:
-                saved_users.append(user["name"])
+                saved_users.append(user["name"].lower())
 
         saved_users.sort()
 
