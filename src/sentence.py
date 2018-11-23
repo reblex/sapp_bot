@@ -2,6 +2,7 @@
 """ Sentence generator using markov self.chain """
 
 import re
+import os
 from random import randint
 
 class Sentence():
@@ -21,7 +22,8 @@ class Sentence():
                             "trailing_commas",
                             "punctuation_whitespace",
                             "punctuation_capitalization",
-                            "random_trailing_punctuation"]
+                            "random_trailing_punctuation",
+                            "capitalize_names"]
 
         with open('conjunctions.txt', 'r') as file:
             self.conjunctions = file.read().split("\n")
@@ -61,7 +63,8 @@ class Sentence():
             'trailing_commas': self._trailing_commas,
             'punctuation_whitespace': self._punctuation_whitespace,
             'punctuation_capitalization': self._punctuation_capitalization,
-            'random_trailing_punctuation': self._random_trailing_punctuation
+            'random_trailing_punctuation': self._random_trailing_punctuation,
+            'capitalize_names': self._capitalize_names
         }
 
         # Call functions based on filter name.
@@ -102,3 +105,18 @@ class Sentence():
         punctuations = [".", ".", ".", "!", "?"]
         if self.string[-1] not in punctuations:
             self.string += punctuations[randint(0, len(punctuations) - 1)]
+
+    def _capitalize_names(self):
+        """Capitalize names anywhere in sentence."""
+        if os.path.isfile("saved_users.txt"):
+            names = list()
+            with open('saved_users.txt', 'r') as file:
+                names = file.read().split("\n")
+
+            words = self.string.split()
+
+            for i in range(len(words) - 1):
+                if words[i] in names:
+                    words[i] = words[i].title()
+
+            self.string = ' '.join(words)
