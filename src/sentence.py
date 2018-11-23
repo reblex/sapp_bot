@@ -20,7 +20,7 @@ class Sentence():
             # Alwas in this order!
             self.filters = ["trailing_conjunction",
                             "trailing_commas",
-                            "punctuation_whitespace",
+                            # "punctuation_whitespace",
                             "punctuation_capitalization",
                             "random_trailing_punctuation",
                             "capitalize_names"]
