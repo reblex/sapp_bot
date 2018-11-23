@@ -152,6 +152,30 @@ class WikiScraper():
 
         self.build_corpus()
 
+    def update_users(self):
+        """Update list of users"""
+        url = self.base_url
+        url += "/api.php?action=query&list=allusers&format=json&aulimit=500"
+
+        saved_users = list()
+        if os.path.isfile("saved_users.txt"):
+            with open("saved_users.txt", "r", encoding='utf8') as file:
+                saved_users = file.read().split("\n")
+
+        res = self.get_url(url)
+        json_data = res.json()
+        for user in json_data["query"]["allusers"]:
+            # Skip blacklisted pages
+            if user["name"] not in saved_users:
+                saved_users.append(user["name"])
+
+        saved_users.sort()
+
+        with open("saved_users.txt", "w+", encoding='utf8') as file:
+            for user in saved_users:
+                file.write("%s\n" % user)
+
+
     @staticmethod
     def get_url(url):
         """General GET request"""
