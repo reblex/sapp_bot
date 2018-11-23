@@ -37,7 +37,7 @@ class Sentence():
                 # print("Generating a tweet of max", self.max_characters, "characters...")
                 self.chain.generate(self.max_characters, first_word)
             except BaseException as exception:
-                print("Error", str(exception))
+                print("Error in sentence.generate", str(exception))
 
             too_many_word_occurences = False
 

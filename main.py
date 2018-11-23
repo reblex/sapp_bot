@@ -96,7 +96,7 @@ def main():
                     print("")
                 print("\n")
             except Exception as e:
-                print("Error:", str(e))
+                print("Error in main.print:", str(e))
 
     elif cmd == 'update':
         ws = WikiScraper()

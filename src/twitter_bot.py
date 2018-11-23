@@ -33,7 +33,7 @@ class TwitterBot():
             try:
                 schedule.run_pending()
             except BaseException as exception:
-                base.prompt_print("Error: " + str(exception))
+                base.prompt_print("Error in twitter_bot.run run_pending: " + str(exception))
 
             try:
                 time.sleep(1)

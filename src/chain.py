@@ -116,7 +116,7 @@ class Chain():
                     word = np.random.choice(list(self.model.keys()), 1)[0]
                     first_word = word.split(' ')[0]
                 except Exception as e:
-                    print("Error:", str(e))
+                    print("Error in chain.generate:", str(e))
                     pass # TODO: Handle this.
 
         if self.debug:
@@ -156,7 +156,7 @@ class Chain():
                         value = np.random.choice(list(self.model.keys()), 1)[0]
                         first_word = value.split(' ')[0]
                     except BaseException as exception:
-                        print("Error:", str(exception))
+                        print("Error in chain.generate loop:", str(exception))
                         # TODO: Handle this better
 
             # After punctuation and first word after, try to pick multi_key word.
