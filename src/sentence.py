@@ -111,9 +111,9 @@ class Sentence():
 
     def _capitalize_names(self):
         """Capitalize names anywhere in sentence."""
-        if os.path.isfile("saved_users.txt"):
+        if os.path.isfile("config/saved_users.txt"):
             names = list()
-            with open('saved_users.txt', 'r') as file:
+            with open('config/saved_users.txt', 'r') as file:
                 names = file.read().split("\n")
 
             words = self.string.split()

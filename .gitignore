@@ -1,8 +1,5 @@
 models
 corpus*
 __pycache__
-blacklist.txt
-word_blacklist.txt
-bot_config.json
+config/
 dev.txt
-saved_users.txt

@@ -114,7 +114,7 @@ def main():
             ws.update_recent_changes()
 
     elif cmd == 'run':
-        bot = TwitterBot("bot_config.json")
+        bot = TwitterBot("config/bot_config.json")
         bot.run()
 
     else:

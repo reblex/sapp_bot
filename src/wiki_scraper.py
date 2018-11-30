@@ -18,13 +18,13 @@ class WikiScraper():
     def __init__(self):
         self.base_url = "https://minervawikin.nu"
         self.pages = list()
-        self.blacklist_file = "blacklist.txt"
+        self.blacklist_file = "config/corpus_blacklist.txt"
         self.blacklist = list()
         self.corpus_folder = "corpus"
         self.corpus_path = "corpus"
         self.word_blacklist = list()
-        if os.path.isfile("word_blacklist.txt"):
-            with open("word_blacklist.txt", encoding='utf8') as file:
+        if os.path.isfile("config/word_blacklist.txt"):
+            with open("config/word_blacklist.txt", encoding='utf8') as file:
                 self.word_blacklist = file.read().split("\n")
 
         if os.path.isfile(self.blacklist_file):
@@ -158,8 +158,8 @@ class WikiScraper():
         url += "/api.php?action=query&list=allusers&format=json&aulimit=500"
 
         saved_users = list()
-        if os.path.isfile("saved_users.txt"):
-            with open("saved_users.txt", "r", encoding='utf8') as file:
+        if os.path.isfile("config/saved_users.txt"):
+            with open("config/saved_users.txt", "r", encoding='utf8') as file:
                 saved_users = file.read().split("\n")
 
         res = self.get_url(url)
@@ -171,7 +171,7 @@ class WikiScraper():
 
         saved_users.sort()
 
-        with open("saved_users.txt", "w+", encoding='utf8') as file:
+        with open("config/saved_users.txt", "w+", encoding='utf8') as file:
             for user in saved_users:
                 file.write("%s\n" % user)
 

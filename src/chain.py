@@ -99,10 +99,10 @@ class Chain():
         if first != "" and first.lower() in self.model.keys():
             first_word = first
 
-        elif os.path.isfile("saved_users.txt") and randint(1, 100) > 50:
+        elif os.path.isfile("config/saved_users.txt") and randint(1, 100) > 50:
             users = list()
 
-            with open('saved_users.txt', 'r') as file:
+            with open('config/saved_users.txt', 'r') as file:
                 users = file.read().split("\n")
 
             if len(users) > 0:
