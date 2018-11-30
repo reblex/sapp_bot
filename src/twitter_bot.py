@@ -22,7 +22,8 @@ class TwitterBot():
         self.config = None
         self._configure()
 
-        schedule.every().day.at(self.config["update_time"]).do(self._update_corpus)
+        schedule.every().day.at(self.config["update_corpus_time"]).do(self._update_corpus)
+        schedule.every().sunday.at(self.config["update_users_time"]).do(self._update_users)
         schedule.every().day.at(self.config["post_time"]).do(self._post)
 
 
@@ -108,6 +109,20 @@ class TwitterBot():
                     raise
 
         base.prompt_print("Finished updating corpus!")
+
+    def _update_users(self):
+        """Update Minervawiki users"""
+        ws = WikiScraper()
+        completed = False
+        while not completed:
+            try:
+                base.prompt_print("Updating users...")
+                ws.update_users()
+                completed = True
+            except:
+                raise
+
+        base.prompt_print("Finished updating users!")
 
 
     def _configure(self):
